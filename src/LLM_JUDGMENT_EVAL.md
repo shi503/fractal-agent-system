@@ -50,8 +50,8 @@ Deterministic checks (build, lint, tsc, security) have already passed. Your job 
 **Template entry format:**
 - **`[pattern]`**: [Why it looks wrong] — [Why it's actually correct]
 
-**Example from emtelliportal pilot:**
-- **`gt(createdAt)` + `ORDER BY DESC`**: This is correct for forward cursor-based pagination. When ordering newest-first (DESC), paginating forward means fetching items *newer* than the last seen timestamp — `gt` is correct, not `lt`. The LLM judge incorrectly flagged this as a bug during the pilot.
+**Example:**
+- **`gt(createdAt)` + `ORDER BY DESC`**: This is correct for forward cursor-based pagination. When ordering newest-first (DESC), paginating forward means fetching items *newer* than the last seen timestamp — `gt` is correct, not `lt`. The LLM judge has been known to flag this pattern incorrectly.
 
 ---
 

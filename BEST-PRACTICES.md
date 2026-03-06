@@ -1,6 +1,6 @@
 # FRACTAL Best Practices & Lessons Learned
 
-*Captured from a production pilot running FRACTAL end-to-end on an Angular/TypeScript SaaS project. These are concrete findings — not theory.*
+*Captured from production use of FRACTAL on a typed/framework codebase. These are concrete findings — not theory.*
 
 ---
 
@@ -58,7 +58,9 @@ The pilot upgraded Sub-Agents from `haiku` to `sonnet` mid-flight. Haiku halluci
 
 **Always use `.yaml` blueprints.** The router's `.md` support (extracting fenced blocks) is a legacy compatibility path. Use standalone `.yaml` files for all new epics.
 
-**`router.py update COMPLETE` without `/handoff` produces no audit trail.** Marking a workstream COMPLETE by calling the router directly bypasses the HANDOFF generation. You end up with a state file that says "COMPLETE" but no record of what was built, what wasn't, or whether the build passed. Always go through the `/handoff` skill for workstream completion.
+**`router.py update COMPLETE` without writing HANDOFF.md produces no audit trail.** Marking a workstream COMPLETE by calling the router directly bypasses the HANDOFF generation. You end up with a state file that says "COMPLETE" but no record of what was built, what wasn't, or whether the build passed. Feature Lead must write HANDOFF.md and run the router update; use the `/handoff` skill in interactive sessions or the bash steps in feature-lead.md when running as a background agent.
+
+**Feature Leads must never call `router.py init`.** `init` resets all workstream states to `NOT_STARTED`, wiping any `IN_PROGRESS` or `COMPLETE` entries. This was observed in production when a Feature Lead ran `init` mid-epic and erased the epic's accumulated state. Feature Leads have exactly one router operation: `python3 router.py update <workstream-name> COMPLETE` at the end of their session. `init` is an Architect-only bootstrap command, run once per epic activation.
 
 **`router.py status` is your dashboard.** Run it after every state change to see the full epic progress. It shows completed/in-progress/not-started groupings and the overall N/M percentage.
 
@@ -88,6 +90,21 @@ The pilot upgraded Sub-Agents from `haiku` to `sonnet` mid-flight. Haiku halluci
 
 **Stray HANDOFF.md files are runtime artifacts — don't commit them.** The correct path for a HANDOFF is `.claude/FRACTAL/workstreams/{kebab-name}/HANDOFF.md`. Files that land at `.claude/FRACTAL/HANDOFF.md` (missing the workstream subdirectory) are stray artifacts. Add `.claude/FRACTAL/workstreams/*/HANDOFF.md` and `.claude/FRACTAL/workstreams/*/PULSE.md` to `.gitignore`.
 
+### Skill vs Bash — The Two Execution Modes
+
+`/pulse` and `/handoff` are **interactive-session skills**: when a human types them in an active Claude Code window, the skill's instructions are injected into that session and the model executes them. This is `disable-model-invocation: true` — correct and intentional; these skills need current session state (task count, blockers) to work.
+
+**When Feature Leads run as background agents (Agent tool) — the default and recommended mode — skills cannot fire.** The `/pulse` and `/handoff` text in the model's output is just text, not an execution. Background agents execute the bash equivalents directly:
+
+| What the skill does | Background agent does instead |
+|--------------------|-------------------------------|
+| `/pulse` writes PULSE.md + runs `router.py pulse` | Bash: `cat >> PULSE.md ...` + `python3 router.py pulse <path>` |
+| `/handoff` runs build gate + writes HANDOFF.md + runs `router.py update COMPLETE` | Bash: build commands + write HANDOFF.md + `python3 router.py update <name> COMPLETE` |
+
+The `feature-lead.md` agent definition includes both approaches: **bash as the primary path** (works in all contexts), with a note that `/pulse` and `/handoff` can be used if running interactively.
+
+**Do NOT flip `disable-model-invocation: false` on these skills.** That would spawn a fresh context, discarding all session state — the skill would have nothing to fill in for `tasks_completed` or `blockers`. The current `true` value is correct.
+
 ---
 
 ## 7. Source Control
@@ -104,11 +121,13 @@ The pilot upgraded Sub-Agents from `haiku` to `sonnet` mid-flight. Haiku halluci
 
 | Anti-Pattern | Why It's Harmful | Correct Approach |
 |---|---|---|
-| Skip `/handoff`, use `router.py update COMPLETE` directly | No HANDOFF.md — no audit trail, no build gate evidence | Always use `/handoff` skill for workstream completion |
-| Run FRACTAL pipeline interactively in conversation | No PULSE/HANDOFF artifacts, conversation history is the only trail | Use Feature Lead agents for real implementation work |
-| Hardcode epic-specific references in general-purpose skills | Misleads future epics (e.g., `PRD-017-03` in `handoff/SKILL.md`) | Skills must be generic; epic context lives in workstream PRDs |
+| Update router via `router.py update COMPLETE` without writing HANDOFF.md | No audit trail, no build gate evidence — "COMPLETE" is misleading | Feature Lead must write HANDOFF.md AND run router update; use the bash steps in `feature-lead.md` when in background agent mode |
+| Run FRACTAL pipeline interactively in the Architect's conversation | No PULSE/HANDOFF artifacts — conversation history is the only trail | Spawn Feature Lead agents for implementation; keep Architect session for orchestration only |
+| Assume `/pulse` and `/handoff` work inside background agents | They are interactive-session skills — background agents cannot invoke slash commands | Use bash equivalents in `feature-lead.md`; skills only work in interactive Claude Code sessions |
+| Hardcode epic-specific references in general-purpose skills | Misleads future epics | Skills must be generic; epic context lives in workstream PRDs |
 | Keep duplicate `router.py` in multiple locations | They diverge independently — the canonical source falls behind the working version | One canonical source (`ROUTING_LOGIC/router.py`), copy to `.claude/FRACTAL/` per the setup guide |
 | Make all workstreams sequential | Misses parallelism, epics take 4x longer than necessary | Default `dependencies: []`, add dependencies only for true sequential constraints |
 | Paste guide content inline into workstream PRDs | Bloats context window, reduces Feature Lead focus | Reference guides by path only |
-| Use haiku for Angular/TypeScript workstreams | Hallucination on typed code, incorrect signal patterns, framework misuse | Sonnet for all code-writing tasks; haiku only for pure text/SQL |
+| Use haiku for typed/framework workstreams | Hallucination on typed code, incorrect patterns, framework misuse | Sonnet for all code-writing tasks; haiku only for pure text/SQL |
 | Mark `COMPLETE` before reviewing HANDOFF | Loses the review gate, tech debt goes unregistered | Review HANDOFF.md, check build gate evidence, then accept |
+| Feature Lead calls `router.py init` | Resets ALL workstream states to NOT_STARTED, wiping accumulated epic progress | Feature Leads call only `router.py update <name> COMPLETE`; `init` is Architect-only, run once at epic activation |

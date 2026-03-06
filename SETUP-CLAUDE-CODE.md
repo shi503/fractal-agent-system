@@ -2,8 +2,31 @@
 
 This guide walks through integrating FRACTAL into a Claude Code project from scratch. It documents the concrete setup steps, gotchas encountered, and conventions established from production use.
 
-**Time to set up:** ~30 minutes
+**Time to set up:** ~30 minutes (or ~5 minutes with the installable example)
 **Prerequisites:** Claude Code CLI, Python 3, `pyyaml`
+
+---
+
+## Option A: Install the full example (fastest)
+
+Copy the `example-claude` folder into your project as `.claude`. You get the full structure: agents, skills, FRACTAL (router, intake folder, ISSUES template, EVAL_TEMPLATES, example BLUEPRINT and workstream PRDs).
+
+```bash
+# From your project root:
+cp -r path/to/fractal-agent-system/example-claude .claude
+```
+
+Then:
+
+1. **Configure router** — Edit `.claude/FRACTAL/router.py` and set `BLUEPRINT_PATH` to your blueprint (e.g. `BLUEPRINT-MyEpic.yaml`).
+2. **Add .gitignore** — In your project root, add the entries from §4 below (`.state.json`, `workstreams/*/PULSE.md`, `workstreams/*/HANDOFF.md`, and optionally `intake/*` with `!intake/README.md`).
+3. **Customize** — Replace `{project}` and paths in agents; edit EVAL_TEMPLATES with your build commands and guiding principles; create your BLUEPRINT and workstream PRDs.
+
+See `example-claude/README.md` in the repo for a short reference. The rest of this guide (§1–§11) applies the same once the folder is in place.
+
+---
+
+## Option B: Manual setup (from scratch)
 
 ---
 
@@ -371,7 +394,132 @@ python3 .claude/FRACTAL/router.py next
 
 ---
 
-## 10. Switching Epics
+## 10. How to Use FRACTAL Day-to-Day
+
+> **Audience:** You know Claude Code — agents, skills, the Agent tool. This section explains the FRACTAL-specific workflow you follow after setup.
+
+### The Three Interaction Modes
+
+| Mode | When | How |
+|------|------|-----|
+| **A — Strategist Interview** | New project, or when priorities shift significantly | In main session: use the strategist agent to interview you and update STRATEGIST.md |
+| **B — Architect (main session)** | Planning or managing a FRACTAL epic | Main Claude Code window is the Architect. Use `/fractal-init`, `/gap-analysis`, and `/commit-summarize` here. |
+| **C — Feature Lead Execution** | Running a workstream | Spawn Feature Lead via Agent tool (background, default) or open a new Claude Code window (interactive, skills available). |
+
+### Mode A — Strategist Interview
+
+Only needed once per project (or when priorities shift significantly). After completing this step, all subsequent sessions operate in **Architect mode (Mode B)**.
+
+#### CRITICAL: The Strategist requires your presence
+
+The Strategist is an intent engineering interview — it cannot run autonomously. You must be in the conversation to answer its questions.
+
+**Correct invocation (you are present):**
+```
+Use the strategist agent to interview me and generate STRATEGIST.md
+```
+
+**Wrong invocation (autonomous — will be blocked):**
+```
+Use the strategist agent to analyze the codebase and generate STRATEGIST.md
+```
+A Strategist run without user input produces a document reflecting current code state, not intended direction. This defeats the purpose of intent engineering.
+
+#### Pre-flight: Drop reference files first (optional)
+
+Before invoking the Strategist, you can drop reference material into the intake folder:
+
+```bash
+mkdir -p .claude/FRACTAL/intake
+# Drop reference docs, notes, or links (see your FRACTAL docs for format).
+# The Strategist reads everything in this folder at session start.
+```
+
+The Strategist produces output such as `STRATEGIST-{project}.md` and optionally a benchmarks file. The Architect reads these before decomposing any epic.
+
+---
+
+### Mode B — Architect (your main session)
+
+Your main Claude Code session plays the Architect role. This is where you:
+
+1. **Plan an epic** — ask Claude to decompose a feature into a BLUEPRINT and workstream PRDs
+2. **Bootstrap the epic** — `/fractal-init BLUEPRINT-MyEpic.yaml`
+3. **Monitor progress** — `python3 .claude/FRACTAL/router.py status`
+4. **Review HANDOFFs** — read `.claude/FRACTAL/workstreams/{name}/HANDOFF.md` after each workstream
+5. **Commit phase work** — `/commit-summarize` after all workstreams in a phase complete
+6. **Milestone gates** — `/gap-analysis` at milestone boundaries
+
+Skills available in the main session: `/fractal-init`, `/gap-analysis`, `/commit-summarize`
+
+---
+
+### Mode C — Feature Lead Execution
+
+Feature Leads run as **background agents** by default (Agent tool). This is the recommended mode — it enables parallel workstream execution without manual window management.
+
+**Spawn a Feature Lead:**
+```
+Use the feature-lead agent to execute workstream: .claude/FRACTAL/workstreams/my-workstream.md
+```
+
+The Feature Lead agent will:
+1. Read the workstream PRD fully
+2. Read all files in the read manifest
+3. Implement the changes within the write manifest
+4. Run the build gate (your project's build/typecheck commands)
+5. Write HANDOFF.md to disk (via bash when in background)
+6. Update router state to COMPLETE
+7. Report next ready workstreams
+
+**After the agent completes**, review its HANDOFF.md and verify the build gate evidence before accepting.
+
+**Alternative: dedicated session per workstream.** Open a new Claude Code window, reference the workstream PRD, and invoke the feature-lead agent. In this mode, `/pulse` and `/handoff` skills work as slash commands.
+
+---
+
+### Understanding Skills vs Bash
+
+FRACTAL skills fall into two categories based on who uses them and where:
+
+| Skill | Used by | Works in background agent? | How |
+|-------|---------|---------------------------|-----|
+| `/fractal-init` | Architect (main session) | Yes — always interactive | Type it in your main Claude Code window |
+| `/gap-analysis` | Architect (main session) | Yes | Type it in your main Claude Code window |
+| `/commit-summarize` | Architect (main session) | Yes | Type it in your main Claude Code window |
+| `/pulse` | Feature Lead | No — background agents cannot invoke skills | Feature Lead writes PULSE.md + runs router.py directly via bash (see feature-lead.md) |
+| `/handoff` | Feature Lead | No | Feature Lead writes HANDOFF.md + runs router.py directly via bash (see feature-lead.md) |
+
+**Why `disable-model-invocation: true` is correct and should NOT be changed:** Operational FRACTAL skills use `disable-model-invocation: true` — the skill's instructions are injected into the *current* session for the active model to execute. This is required because `/pulse` and `/handoff` need to introspect current session state (tasks completed, blockers). Setting this to `false` would spawn a fresh context with no session state — the skill would have nothing to fill in and would break.
+
+---
+
+### Typical Weekly Workflow
+
+```
+Starting a new epic:
+  1. In main session: plan the epic and generate BLUEPRINT + workstream PRDs
+  2. /fractal-init BLUEPRINT-MyEpic.yaml
+  3. python3 .claude/FRACTAL/router.py next → spawn Feature Lead agents
+
+Ongoing:
+  1. Check router status: python3 .claude/FRACTAL/router.py status
+  2. Spawn Feature Lead agents for ready workstreams
+  3. Review HANDOFF.md files as they complete
+
+Phase complete:
+  1. Review all HANDOFF.md files in the phase
+  2. /commit-summarize
+  3. python3 .claude/FRACTAL/router.py next → begin next phase
+
+Milestone boundary:
+  1. /gap-analysis
+  2. Review gap document and adjust priorities
+```
+
+---
+
+## 11. Switching Epics
 
 When starting a new epic:
 1. Create `BLUEPRINT-{NewEpic}.yaml` in `.claude/FRACTAL/`
@@ -387,7 +535,7 @@ STATE_PATH = os.path.join(os.path.dirname(__file__), ".state-epic2.json")
 
 ---
 
-## Lessons from Production Pilots
+## Lessons from Production Use
 
 These are concrete issues encountered during Claude Code integration:
 
@@ -397,7 +545,7 @@ These are concrete issues encountered during Claude Code integration:
 | router.py only handled `.md` files | Original source extracted YAML from fenced blocks; pure `.yaml` files caused parse errors | Added `.yaml`/`.yml` detection branch in `load_blueprint()` |
 | No model shown in `next` output | Original `router.py next` didn't display the `model` field | Added model display to `cmd_next()` output |
 | `.state.json` not gitignored | State file would conflict across branches | Add to `.gitignore` before first commit |
-| PULSE file path convention | `/pulse` skill needs to know the kebab-name → file path mapping | Standardize: `FeatureLead-PreferencesUI` → `workstreams/preferences-ui/PULSE.md` |
+| PULSE file path convention | `/pulse` skill needs to know the kebab-name → file path mapping | Standardize: `FeatureLead-MyWorkstream` → `workstreams/my-workstream/PULSE.md` |
 
 ---
 
@@ -419,6 +567,14 @@ After setup, your project should look like:
     ├── router.py               # Deterministic state machine
     ├── BLUEPRINT-{Epic}.yaml   # One per epic (committed)
     ├── .state.json             # Runtime state (gitignored)
+    ├── intake/
+    │   └── README.md           # Strategist intake folder guide (contents gitignored)
+    ├── ISSUES.md               # Framework-issue log template (committed)
+    ├── EVAL_TEMPLATES/         # Layer 1–4 eval templates (committed)
+    │   ├── deterministic-eval.md
+    │   ├── llm-judgment-eval.md
+    │   ├── qualitative-persona-eval.md
+    │   └── strategic-benchmark-eval.md
     └── workstreams/
         ├── {workstream-1}.md   # Workstream PRDs (committed)
         ├── {workstream-2}.md

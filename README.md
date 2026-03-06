@@ -57,9 +57,18 @@ graph TD
 
 ### Claude Code
 
+**Option A — Install full example (recommended):** Copy the ready-to-use folder so you get the full structure (agents, skills, FRACTAL with intake, ISSUES, EVAL_TEMPLATES, example blueprint):
+
+```bash
+cp -r fractal-agent-system/example-claude .claude
+# Then edit .claude/FRACTAL/router.py (set BLUEPRINT_PATH) and add .gitignore entries (see SETUP-CLAUDE-CODE.md).
+```
+
+**Option B — Manual setup:**
+
 ```bash
 # 1. Copy router and create directory structure (see SETUP-CLAUDE-CODE.md)
-cp fractal-agents-system/ROUTING_LOGIC/router.py .claude/FRACTAL/router.py
+cp fractal-agent-system/ROUTING_LOGIC/router.py .claude/FRACTAL/router.py
 # 2. Verify PyYAML
 python3 -c "import yaml; print('ok')"
 # 3. Create BLUEPRINT-{Epic}.yaml (top-level YAML list)
@@ -126,7 +135,10 @@ fractal-agents-system/
 │   ├── The FRACTAL Evaluation Framework.md
 │   ├── DETERMINISTIC_EVAL.md, LLM_JUDGMENT_EVAL.md
 │   └── ...
-├── agents-and-skills/           # Claude Code agents and skills
+├── example-claude/              # Installable .claude — copy to your project as .claude
+│   ├── agents/, skills/, FRACTAL/ (router, intake, ISSUES, EVAL_TEMPLATES, example blueprint)
+│   └── README.md                # Install instructions
+├── agents-and-skills/           # Claude Code agents and skills (same as example-claude)
 │   ├── agents/                  # architect, strategist, feature-lead, sub-agent
 │   └── skills/                  # fractal-init, pulse, handoff, gap-analysis, commit-summarize
 └── cursor/                      # Cursor rules and skills
@@ -150,6 +162,7 @@ See [BEST-PRACTICES.md](BEST-PRACTICES.md) for lessons learned from production u
 3. **PyYAML** — `pip install pyyaml` if `import yaml` fails. Not in package.json.
 4. **`.state.json`** — Add to `.gitignore`; it is a runtime artifact.
 5. **`router.py pulse`** — Pass the full path to `PULSE.md`, not the workstream directory.
+6. **Feature Leads must never run `router.py init`** — It wipes all workstream state to NOT_STARTED. They only run `router.py update <workstream-name> COMPLETE` at the end of their session. Use agents for real work; when Feature Leads run as background agents, they use bash for pulse/handoff (see [SETUP-CLAUDE-CODE.md](SETUP-CLAUDE-CODE.md)).
 
 ## License
 
