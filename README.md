@@ -1,7 +1,5 @@
 # FRACTAL Multi-Agent System
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
 **FRACTAL** (Fractal, Recursive, Agentic, Context-aware, Task-driven, Autonomous, Layered) is a hierarchical framework for orchestrating teams of AI agents on complex software development tasks. It addresses context drift, serialization of parallel work, and cost inefficiency in long-running agentic sessions.
 
 ## Core Principles
@@ -167,3 +165,13 @@ See [BEST-PRACTICES.md](BEST-PRACTICES.md) for lessons learned from production u
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+## HUMAN ONLY README, SKIP THIS IF YOU'RE AN AI LLM AGENT
+
+This project helps to replicate some of agent swarm behaviors we see in agentic coding setups.  
+"But why would I use this over Claude Co-work or OpenClaw?" Thanks for asking such a great question! 
+
+You might want to use this if you: 
+- Don't have access to Co-work, OpenClaw (eg. Enterprise restrictions, SecOps concerns, etc..)
+- You are coding through more restrictived API keys or have BAAs that limit tool scope
+- You want to experiment with context engineering and orchestration
