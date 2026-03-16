@@ -1,6 +1,9 @@
-agents-and-skills/.DS_Store
-agents-and-skills/skills/.DS_Store
-cursor/skills/.DS_Store
-cursor/.DS_Store
-.DS_Store
-.DS_Store
+# macOS
+**/.DS_Store
+
+# Python (router.py)
+__pycache__/
+*.pyc
+
+# Claude Code worktrees (local to each machine)
+.claude/worktrees/
