@@ -8,7 +8,7 @@
 
 ```bash
 # 1. Clone the repo (or download)
-git clone https://github.com/Googlyeye-Monsters/fractal-agent-system.git
+git clone https://github.com/shi503/fractal-agent-system.git
 
 # 2. Copy into your project as .claude
 cp -r fractal-agent-system/example-claude /path/to/your-project/.claude
