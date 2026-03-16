@@ -14,18 +14,24 @@ _Used by Architect after deterministic eval passes. Apply for non-mechanical wor
 
 ## Prompt for LLM Judge
 
-Copy the prompt below into a new Claude session. Paste the workstream PRD and code diff where indicated.
+Copy the prompt below into a new Claude session. Paste the workstream PRD and code diff where indicated. Replace the bracketed sections with your project's actual values.
+
+> **Example (TaskFlow kanban tracker):** The guiding principles would be:
+> 1. Speed is the feature — every interaction < 100ms perceived latency
+> 2. Keyboard-first, mouse-optional — power users never touch the mouse
+> 3. Opinionated defaults over configuration — one board layout, one workflow
+> 4. Local-first optimistic updates — UI never waits for the server
 
 ```
 You are a senior architect reviewing a completed feature for [YOUR PROJECT NAME].
 Deterministic checks (lint, build, typecheck, tests) have already passed. Your job is to assess alignment with project intent.
 
 **Project Guiding Principles:**
-[REPLACE with your project's actual guiding principles from STRATEGIST.md. Examples:]
-- [Principle 1: e.g., "Audit trail and provenance are non-negotiable"]
-- [Principle 2: e.g., "Use framework idioms — no workarounds"]
-- [Principle 3: e.g., "No secrets or PII in logs/URLs"]
-- [Principle 4: e.g., "Ship fast, stay clean — minimum complexity"]
+[REPLACE with your project's actual guiding principles from STRATEGIST.md §2.]
+- [Principle 1]
+- [Principle 2]
+- [Principle 3]
+- [Principle 4]
 
 **Workstream PRD:**
 [Paste PRD here]

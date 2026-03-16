@@ -20,8 +20,8 @@ When the Feature Lead runs as a background agent, they use the bash steps in `fe
 
 2. **Determine pulse file path:**
    Convert the FeatureLead name to kebab-case for the workstream folder:
-   - `FeatureLead-PreferencesUI` → `.claude/FRACTAL/workstreams/preferences-ui/PULSE.md`
-   - `FeatureLead-EventWiring-FileProcessing` → `.claude/FRACTAL/workstreams/event-wiring-files/PULSE.md`
+   - `FeatureLead-PreferencesUI` → `.claude/fractal/workstreams/preferences-ui/PULSE.md`
+   - `FeatureLead-EventWiring-FileProcessing` → `.claude/fractal/workstreams/event-wiring-files/PULSE.md`
 
    Create the directory if it doesn't exist.
 
@@ -39,7 +39,7 @@ When the Feature Lead runs as a background agent, they use the bash steps in `fe
 
 4. **Run deterministic check:**
    ```bash
-   python3 .claude/FRACTAL/router.py pulse <pulse-file-path>
+   python3 .claude/fractal/router.py pulse <pulse-file-path>
    ```
 
 5. **If HEARTBEAT_ALERT:** Surface the escalation immediately. Stop work. Report the blocker to the user for Architect review.

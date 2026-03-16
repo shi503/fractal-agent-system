@@ -17,24 +17,42 @@ Run AFTER the Architect marks the workstream COMPLETE (Layers 1–2 passed). The
 - User-facing workstreams: new pages, workflow UIs, data displays, onboarding flows
 - Skip for: migrations, backend-only routes with no UI, config changes, refactors
 
-## Personas (Customize)
+## Example Personas (TaskFlow kanban tracker)
 
-_Define 1–3 key user personas for your product. For each, list 3–5 evaluation questions._
-
-**Example structure:**
-
-| Persona | Role / Segment | Evaluation focus |
+| Persona | Role / Segment | Evaluation Focus |
 |---------|----------------|------------------|
-| [Persona A] | e.g. Economic buyer | Defensibility, workflow fit, audit readiness |
-| [Persona B] | e.g. Integration owner | API-first, schema stability, observability |
-| [Persona C] | e.g. End operator | Trust, clarity, speed under pressure |
+| **Engineering Lead** | Technical buyer, evaluating tools for their team | Keyboard efficiency, customizability, data export, self-hosting ease |
+| **Individual Contributor** | Day-to-day user managing their tasks | Speed, clarity, reduced friction, "does this feel faster than what I use now?" |
+| **Demo Observer** | Stakeholder watching a product demo | Visual polish, wow factor, "does this look professional and intentional?" |
 
-**Per-persona questions (replace with your own):**
-1. Does this meet [persona]'s bar for [criterion 1]?
-2. Would [persona] trust this in production?
-3. [Add 1–3 more questions per persona.]
+### Engineering Lead — Evaluation Questions
 
-**Scoring:** Pass / Partial / Fail for each question. Document any Partial or Fail with a brief remediation note.
+1. Would this feature convince an engineering lead to adopt TaskFlow over Linear/Jira for their team?
+2. Can the user discover this feature without reading documentation?
+3. Is the keyboard workflow complete — can the user accomplish the task without a mouse?
+4. Does the data model support future extensibility (custom fields, integrations)?
+5. Would the engineering lead trust this with production team data?
+
+### Individual Contributor — Evaluation Questions
+
+1. Does this feature reduce friction compared to the user's current tool?
+2. Is the interaction latency imperceptible (< 100ms)?
+3. Is the visual hierarchy clear — does the user immediately know what to do?
+4. Can the user undo a mistake easily?
+
+### Demo Observer — Evaluation Questions
+
+1. Does the feature look polished and intentional (not like a prototype)?
+2. Does the animation/transition quality match modern SaaS products?
+3. Would this create a "wow" moment in a 5-minute demo?
+
+## Scoring
+
+**Per question:** Pass / Partial / Fail
+
+- **Pass** — Meets the persona's bar without caveats
+- **Partial** — Functional but has notable gaps; document remediation
+- **Fail** — Does not meet the persona's bar; requires rework
 
 ## Output Format
 
@@ -42,17 +60,42 @@ _Define 1–3 key user personas for your product. For each, list 3–5 evaluatio
 ## Qualitative Persona Evaluation — [Workstream Name]
 
 **Date:** YYYY-MM-DD
-**Personas evaluated:** [list]
+**Personas evaluated:** Engineering Lead, Individual Contributor, Demo Observer
 
-### [Persona Name]
+### Engineering Lead
 | # | Question | Score | Notes |
 |---|----------|-------|-------|
-| 1 | ... | Pass/Partial/Fail | ... |
+| 1 | Adopt over Linear/Jira? | Pass/Partial/Fail | ... |
+| 2 | Discoverable without docs? | Pass/Partial/Fail | ... |
+| 3 | Keyboard workflow complete? | Pass/Partial/Fail | ... |
+| 4 | Extensible data model? | Pass/Partial/Fail | ... |
+| 5 | Trust with production data? | Pass/Partial/Fail | ... |
+
+### Individual Contributor
+| # | Question | Score | Notes |
+|---|----------|-------|-------|
+| 1 | Reduces friction? | Pass/Partial/Fail | ... |
+| 2 | Latency < 100ms? | Pass/Partial/Fail | ... |
+| 3 | Visual hierarchy clear? | Pass/Partial/Fail | ... |
+| 4 | Undo available? | Pass/Partial/Fail | ... |
+
+### Demo Observer
+| # | Question | Score | Notes |
+|---|----------|-------|-------|
+| 1 | Polished and intentional? | Pass/Partial/Fail | ... |
+| 2 | Animation quality? | Pass/Partial/Fail | ... |
+| 3 | "Wow" moment? | Pass/Partial/Fail | ... |
 
 ### Overall Result
 - **Result:** PASS / CONDITIONAL PASS / FAIL
 - **Remediation:** [if any Partial/Fail, what needs to happen]
 ```
+
+## Customizing for Your Project
+
+1. Replace the three personas above with your actual user segments.
+2. Write 3–5 evaluation questions per persona that reflect what they care about.
+3. Tie questions back to your Strategist doc's Guiding Principles and Failure Mode Register.
 
 ## Relationship to Other Evals
 

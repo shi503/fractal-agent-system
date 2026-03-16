@@ -1,24 +1,24 @@
 # Example BLUEPRINT — replace with your epic
-# Run: python3 .claude/FRACTAL/router.py init
-# Then: python3 .claude/FRACTAL/router.py next
+# Run: python3 .claude/fractal/router.py init
+# Then: python3 .claude/fractal/router.py next
 
 - name: "Phase 1 — Parallel workstreams"
   workstreams:
     - feature_lead: FeatureLead-ExampleBackend
       model: sonnet
-      prd: .claude/FRACTAL/workstreams/example-backend.md
+      prd: .claude/fractal/workstreams/example-backend.md
       dependencies: []
 
     - feature_lead: FeatureLead-ExampleFrontend
       model: sonnet
-      prd: .claude/FRACTAL/workstreams/example-frontend.md
+      prd: .claude/fractal/workstreams/example-frontend.md
       dependencies: []
 
 - name: "Phase 2 — Depends on Phase 1"
   workstreams:
     - feature_lead: FeatureLead-ExampleIntegration
       model: sonnet
-      prd: .claude/FRACTAL/workstreams/example-integration.md
+      prd: .claude/fractal/workstreams/example-integration.md
       dependencies:
         - FeatureLead-ExampleBackend
         - FeatureLead-ExampleFrontend

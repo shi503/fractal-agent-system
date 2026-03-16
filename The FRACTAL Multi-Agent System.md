@@ -1,5 +1,3 @@
-_This file is machine-readable. Do not edit manually._
-
 # The FRACTAL Multi-Agent System
 
 Welcome to the FRACTAL (Fractal, Recursive, Agentic, Context-aware, Task-driven, Autonomous, Layered) multi-agent system. This system provides a structured, hierarchical framework for orchestrating teams of AI agents to perform complex software development tasks. It is designed to be robust, predictable, and transparent, drawing on best practices from modern agentic design patterns.
@@ -22,6 +20,27 @@ The system operates top-down, starting with the **Strategist** and moving to **S
 3. **The Feature Leads (Tier 2):** Each Feature Lead owns one workstream. It reads the PRD, implements all changes in the file manifest, runs the build gate, and generates a HANDOFF.md on completion.
 4. **The Sub-Agents (Tier 3):** Execute single atomic tasks delegated by Feature Leads. One task, one file manifest, terminates on completion.
 
+```mermaid
+graph TB
+    %% ── Left column: Delegation flows DOWN ──
+    User["User (Human)"]
+    Strategist["Tier 0: Strategist (w/ User)"]
+    Architect["Tier 1: Architect (w/ User)"]
+    Router["router.py"]
+    BlueprintPRDs["Blueprint.yaml + PRDs"]
+    FeatureLeads["Tier 2: Feature Lead(s)"]
+    SubAgents["Tier 3: Sub-Agents"]
+
+    User -->|"intent interview"| Strategist
+    Strategist -->|"Strategist w/ User:
+    epic request"| Architect
+    Strategist -->|"STRATEGIST.md"| Architect
+    Architect -->|"Create PRDs and add to Blueprint"| BlueprintPRDs
+    BlueprintPRDs --> Router
+    Router -->|"next: ready workstreams"| FeatureLeads
+    FeatureLeads -->|"atomic tasks"| SubAgents
+```
+
 ## 4-Layer Evaluation Pipeline
 
 Every workstream goes through up to 4 evaluation layers:
@@ -33,17 +52,60 @@ Every workstream goes through up to 4 evaluation layers:
 | Layer 3 — Qualitative Persona | Strategist | No (informs backlog) | Would real users trust this? Workflow fit, UX, domain accuracy |
 | Layer 4 — Strategic Benchmark | Strategist | No (informs roadmap) | Are we building the right thing? Competitive positioning |
 
+```mermaid
+graph TB
+    %% ── Left column: Delegation flows DOWN ──
+    User["User (Human)"]
+    Strategist["Tier 0: Strategist (w/ User)"]
+    Architect["Tier 1: Architect (w/ User)"]
+    Router["router.py"]
+    BlueprintPRDs["Blueprint.yaml + PRDs"]
+    FeatureLeads["Tier 2: Feature Lead(s)"]
+    SubAgents["Tier 3: Sub-Agents"]
+
+    User -->|"intent interview"| Strategist
+    Strategist -->|"Strategist w/ User:
+    epic request"| Architect
+    Strategist -->|"STRATEGIST.md"| Architect
+    Architect -->|"Create PRDs and add to Blueprint"| BlueprintPRDs
+    BlueprintPRDs --> Router
+    Router -->|"next: ready workstreams"| FeatureLeads
+    FeatureLeads -->|"atomic tasks"| SubAgents
+
+    %% ── Right column: Validation flows UP ──
+    SubAgents -.->|"report back"| FeatureLeads
+    FeatureLeads -.->|"HANDOFF.md + build evidence"| HandoffGate["Build Gate"]
+    HandoffGate <-.->|"router.py update COMPLETE"| Router
+    Router <-.->|"status + next"| Architect
+    Architect <-.->|"Layer 1: lint/build/tsc"| EvalGate["Eval Gate"]
+    Architect <-.->|"Layer 2: LLM judgment"| EvalGate
+    EvalGate <-.->|"accept"| Router
+    EvalGate <-.->|"reject (max 2x)"| FeatureLeads
+    EvalGate <-.->|"escalate"| User
+    Architect <-.->|"escalate"| User
+```
+
 **2-Attempt Retry Policy:** If a layer fails twice, escalate to the next tier up — do not loop indefinitely.
 
 ## Getting Started
+```bash
+# 1. Copy into your project as .claude
+cp -r fractal-agent-system/example-claude /path/to/your-project/.claude
 
-1. **Define Your Project:** Run the Strategist agent to complete `STRATEGIST.md` — covers mandate, principles, definition of done, constraints, failure modes, autonomy level, milestones, and source control preferences.
-2. **Copy router.py:** `cp .FRACTAL_AGENTS_SYSTEM/ROUTING_LOGIC/router.py .claude/FRACTAL/router.py`
-3. **Create a BLUEPRINT:** Write a `.yaml` BLUEPRINT file defining your workstreams and dependency edges.
-4. **Initialize the State:** `python3 .claude/FRACTAL/router.py init`
-5. **Start the first Feature Leads:** `python3 .claude/FRACTAL/router.py next` to see which workstreams are ready.
+# 2. Verify PyYAML
+python3 -c "import yaml; print('ok')"
+# If missing: pip install pyyaml
+```
 
-See `SETUP-CLAUDE-CODE.md` for the full step-by-step setup guide.
+Then open Claude Code in your project:
+
+1. **Strategist interview** (once per project): `Use the strategist agent to interview me and generate STRATEGIST-myapp.md`
+2. **Plan an epic**: `I want to build [your feature]. Use architect mode to create a BLUEPRINT and workstream PRDs.`
+3. **Bootstrap**: `/fractal-init BLUEPRINT-MyEpic.yaml`
+4. **Execute workstreams**: `Use the feature-lead agent to execute workstream: .claude/fractal/workstreams/my-workstream.md`
+5. **Check progress**: `python3 .claude/fractal/router.py status`
+
+See [SETUP-CLAUDE-CODE.md](SETUP-CLAUDE-CODE.md) for the full step-by-step setup guide.See `SETUP-CLAUDE-CODE.md` for the full step-by-step setup guide.
 
 ## Directory Structure (Claude Code Integration)
 
@@ -51,8 +113,9 @@ After setup, your project looks like:
 
 ```
 .claude/
+├── CLAUDE.md                    # Always-on project context (customize for your project)
 ├── agents/
-│   ├── {your-architect}.md      # Architect — Opus, with FRACTAL Architect Mode
+│   ├── architect.md             # Architect — Opus, with FRACTAL Architect Mode
 │   ├── feature-lead.md          # Feature Lead — Sonnet
 │   ├── sub-agent.md             # Sub-Agent — Sonnet (NOT Haiku for typed code)
 │   └── strategist.md            # Strategist — Opus
@@ -61,22 +124,23 @@ After setup, your project looks like:
 │   ├── pulse/SKILL.md           # Feature Lead heartbeat + escalation check
 │   ├── handoff/SKILL.md         # Build gate + HANDOFF.md + router COMPLETE
 │   ├── gap-analysis/SKILL.md    # Milestone boundary gap analysis
-│   └── commit-summarize/SKILL.md # Phase/epic commit + optional PR creation
-└── FRACTAL/
+│   ├── commit-summarize/SKILL.md # Phase/epic commit + optional PR creation
+│   └── quality-pass/SKILL.md   # AI slop cleanup before handoff
+└── fractal/
     ├── router.py                # Deterministic state machine
     ├── BLUEPRINT-{Epic}.yaml    # One per epic (committed to git)
-    ├── STRATEGIST.md            # Project-level Seed of Intent (committed)
+    ├── STRATEGIST-{project}.md  # Project-level Seed of Intent (committed)
+    ├── STRATEGIST-example.md    # Sample completed Strategist doc (reference)
     ├── .state.json              # Runtime state (GITIGNORE this)
+    ├── ISSUES.md                # Framework-level issue log template
     ├── EVAL_TEMPLATES/          # Evaluation templates (Layer 1–2 required; 3–4 optional)
     │   ├── deterministic-eval.md    # Layer 1 (required)
     │   ├── llm-judgment-eval.md     # Layer 2 (required)
     │   ├── qualitative-persona-eval.md   # Layer 3 (optional, Strategist-owned)
     │   └── strategic-benchmark-eval.md   # Layer 4 (optional, Strategist-owned)
+    ├── intake/
+    │   └── README.md            # Strategist intake folder guide (contents gitignored)
     └── workstreams/
-        ├── {workstream-1}.md    # Workstream PRDs (committed)
-        └── {workstream-1}/      # Runtime artifacts (GITIGNORE)
-            ├── PULSE.md
-            └── HANDOFF.md
 ```
 
 ## A Note on Determinism

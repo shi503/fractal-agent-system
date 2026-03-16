@@ -9,7 +9,7 @@ This guide walks through integrating FRACTAL into a Claude Code project from scr
 
 ## Option A: Install the full example (fastest)
 
-Copy the `example-claude` folder into your project as `.claude`. You get the full structure: agents, skills, FRACTAL (router, intake folder, ISSUES template, EVAL_TEMPLATES, example BLUEPRINT and workstream PRDs).
+Copy the `example-claude` folder into your project as `.claude`. You get the full structure: agents, skills, fractal (router, intake folder, ISSUES template, EVAL_TEMPLATES, example BLUEPRINT and workstream PRDs).
 
 ```bash
 # From your project root:
@@ -18,7 +18,7 @@ cp -r path/to/fractal-agent-system/example-claude .claude
 
 Then:
 
-1. **Configure router** — Edit `.claude/FRACTAL/router.py` and set `BLUEPRINT_PATH` to your blueprint (e.g. `BLUEPRINT-MyEpic.yaml`).
+1. **Configure router** — Edit `.claude/fractal/router.py` and set `BLUEPRINT_PATH` to your blueprint (e.g. `BLUEPRINT-MyEpic.yaml`).
 2. **Add .gitignore** — In your project root, add the entries from §4 below (`.state.json`, `workstreams/*/PULSE.md`, `workstreams/*/HANDOFF.md`, and optionally `intake/*` with `!intake/README.md`).
 3. **Customize** — Replace `{project}` and paths in agents; edit EVAL_TEMPLATES with your build commands and guiding principles; create your BLUEPRINT and workstream PRDs.
 
@@ -47,7 +47,7 @@ pip install pyyaml
 ## 2. Create the Directory Structure
 
 ```bash
-mkdir -p .claude/FRACTAL/workstreams
+mkdir -p .claude/fractal/workstreams
 mkdir -p .claude/agents
 mkdir -p .claude/skills/fractal-init
 mkdir -p .claude/skills/pulse
@@ -59,10 +59,10 @@ mkdir -p .claude/skills/handoff
 ## 3. Copy and Configure router.py
 
 ```bash
-cp .FRACTAL_AGENTS_SYSTEM/ROUTING_LOGIC/router.py .claude/FRACTAL/router.py
+cp fractal-agent-system/ROUTING_LOGIC/router.py .claude/fractal/router.py
 ```
 
-Open `.claude/FRACTAL/router.py` and update the two path constants at the top:
+Open `.claude/fractal/router.py` and update the two path constants at the top:
 
 ```python
 # Update these for each epic:
@@ -82,9 +82,9 @@ Add to your project's `.gitignore`:
 
 ```gitignore
 # FRACTAL runtime artifacts
-.claude/FRACTAL/.state.json
-.claude/FRACTAL/workstreams/*/PULSE.md
-.claude/FRACTAL/workstreams/*/HANDOFF.md
+.claude/fractal/.state.json
+.claude/fractal/workstreams/*/PULSE.md
+.claude/fractal/workstreams/*/HANDOFF.md
 ```
 
 The `router.py`, `BLUEPRINT-*.yaml`, and workstream PRD `.md` files **are** committed. The state, pulse logs, and handoff reports are runtime artifacts that should not be committed.
@@ -113,9 +113,9 @@ When working on a large epic, shift into Architect mode. Rules:
 1. Decompose the epic into workstreams (3–8 is typical)
 2. Assign model tier: `sonnet` for multi-file/complex, `haiku` for single-file/mechanical
 3. Map dependency edges — most workstreams should have `dependencies: []`
-4. Write BLUEPRINT to `.claude/FRACTAL/BLUEPRINT-{EpicName}.yaml`
-5. Write one workstream PRD per workstream to `.claude/FRACTAL/workstreams/`
-6. Tell user to run: `python3 .claude/FRACTAL/router.py init`
+4. Write BLUEPRINT to `.claude/fractal/BLUEPRINT-{EpicName}.yaml`
+5. Write one workstream PRD per workstream to `.claude/fractal/workstreams/`
+6. Tell user to run: `python3 .claude/fractal/router.py init`
 ```
 
 ### Feature Lead Agent
@@ -196,9 +196,9 @@ disable-model-invocation: true
 Bootstrapping FRACTAL for the epic in $ARGUMENTS.
 
 Steps:
-1. Verify: ls .claude/FRACTAL/router.py && ls .claude/FRACTAL/$ARGUMENTS
-2. Run: python3 .claude/FRACTAL/router.py init
-3. Run: python3 .claude/FRACTAL/router.py next
+1. Verify: ls .claude/fractal/router.py && ls .claude/fractal/$ARGUMENTS
+2. Run: python3 .claude/fractal/router.py init
+3. Run: python3 .claude/fractal/router.py next
 4. Print session brief: epic name, workstream count, which are parallel, recommended first step
 5. Remind: run `router.py update <name> IN_PROGRESS` before starting each workstream
 ```
@@ -219,11 +219,11 @@ Emitting heartbeat for $ARGUMENTS.
 
 Steps:
 1. Collect: tasks_completed (N/total), blockers, escalation_needed (bool)
-2. Determine pulse path: .claude/FRACTAL/workstreams/{kebab-name}/PULSE.md
+2. Determine pulse path: .claude/fractal/workstreams/{kebab-name}/PULSE.md
 3. Append JSON block:
    { "timestamp": "ISO-8601", "status": "IN_PROGRESS",
      "tasks_completed": "N/total", "blockers": "...", "escalation_needed": false }
-4. Run: python3 .claude/FRACTAL/router.py pulse <path>
+4. Run: python3 .claude/fractal/router.py pulse <path>
 5. If HEARTBEAT_ALERT: surface to user, stop work
 6. If HEARTBEAT_OK: one-line summary, continue
 ```
@@ -247,14 +247,14 @@ CRITICAL: Do not proceed if the build gate fails.
 Steps:
 1. Run build gate: [your project's build/typecheck commands]
    Stop and fix if it fails — do not proceed to Step 2.
-2. Write .claude/FRACTAL/workstreams/{kebab-name}/HANDOFF.md:
+2. Write .claude/fractal/workstreams/{kebab-name}/HANDOFF.md:
    - Summary of work completed (specific: file paths, function names)
    - Summary of work NOT completed (honest)
    - Technical debt registered
    - Key decisions and deviations from PRD
    - Deterministic eval results (build: PASS/FAIL)
-3. Run: python3 .claude/FRACTAL/router.py update <name> COMPLETE
-4. Run: python3 .claude/FRACTAL/router.py next
+3. Run: python3 .claude/fractal/router.py update <name> COMPLETE
+4. Run: python3 .claude/fractal/router.py next
 5. Tell user: "Review HANDOFF.md before accepting."
 ```
 
@@ -262,31 +262,31 @@ Steps:
 
 ## 7. Write Your First BLUEPRINT
 
-Create `.claude/FRACTAL/BLUEPRINT-{EpicName}.yaml`.
+Create `.claude/fractal/BLUEPRINT-{EpicName}.yaml`.
 
 **Critical format rule:** The file must be a **top-level YAML list**. Do NOT wrap it in a `phases:` key — `router.py` iterates the list directly and will throw `TypeError: string indices must be integers` if you use a dict wrapper.
 
 ```yaml
 # BLUEPRINT-MyEpic.yaml
-# Run: python3 .claude/FRACTAL/router.py init
+# Run: python3 .claude/fractal/router.py init
 
 - name: "Phase 1 — Core (parallel)"
   workstreams:
     - feature_lead: FeatureLead-Database
       model: haiku
-      prd: .claude/FRACTAL/workstreams/database.md
+      prd: .claude/fractal/workstreams/database.md
       dependencies: []
 
     - feature_lead: FeatureLead-API
       model: sonnet
-      prd: .claude/FRACTAL/workstreams/api.md
+      prd: .claude/fractal/workstreams/api.md
       dependencies: []
 
 - name: "Phase 2 — UI (depends on Phase 1)"
   workstreams:
     - feature_lead: FeatureLead-UI
       model: sonnet
-      prd: .claude/FRACTAL/workstreams/ui.md
+      prd: .claude/fractal/workstreams/ui.md
       dependencies:
         - FeatureLead-Database
         - FeatureLead-API
@@ -321,7 +321,7 @@ Create `.claude/FRACTAL/BLUEPRINT-{EpicName}.yaml`.
 
 ## 8. Write Workstream PRDs
 
-Each workstream needs a PRD at `.claude/FRACTAL/workstreams/{kebab-name}.md`. The PRD is the **complete context** a Feature Lead gets — it must be self-contained.
+Each workstream needs a PRD at `.claude/fractal/workstreams/{kebab-name}.md`. The PRD is the **complete context** a Feature Lead gets — it must be self-contained.
 
 **Required sections:**
 
@@ -374,22 +374,22 @@ Reference existing files, APIs, interfaces — don't assume knowledge.
 
 ```bash
 # Initialize state
-python3 .claude/FRACTAL/router.py init
+python3 .claude/fractal/router.py init
 
 # See what's ready
-python3 .claude/FRACTAL/router.py next
+python3 .claude/fractal/router.py next
 
 # Claim a workstream
-python3 .claude/FRACTAL/router.py update FeatureLead-MyWorkstream IN_PROGRESS
+python3 .claude/fractal/router.py update FeatureLead-MyWorkstream IN_PROGRESS
 
 # Start a Feature Lead session in Claude Code:
 # - Open a new session
-# - Reference the workstream PRD: .claude/FRACTAL/workstreams/my-workstream.md
+# - Reference the workstream PRD: .claude/fractal/workstreams/my-workstream.md
 # - Invoke the feature-lead agent
 
 # After HANDOFF accepted:
-python3 .claude/FRACTAL/router.py update FeatureLead-MyWorkstream COMPLETE
-python3 .claude/FRACTAL/router.py next
+python3 .claude/fractal/router.py update FeatureLead-MyWorkstream COMPLETE
+python3 .claude/fractal/router.py next
 ```
 
 ---
@@ -430,7 +430,7 @@ A Strategist run without user input produces a document reflecting current code 
 Before invoking the Strategist, you can drop reference material into the intake folder:
 
 ```bash
-mkdir -p .claude/FRACTAL/intake
+mkdir -p .claude/fractal/intake
 # Drop reference docs, notes, or links (see your FRACTAL docs for format).
 # The Strategist reads everything in this folder at session start.
 ```
@@ -445,8 +445,8 @@ Your main Claude Code session plays the Architect role. This is where you:
 
 1. **Plan an epic** — ask Claude to decompose a feature into a BLUEPRINT and workstream PRDs
 2. **Bootstrap the epic** — `/fractal-init BLUEPRINT-MyEpic.yaml`
-3. **Monitor progress** — `python3 .claude/FRACTAL/router.py status`
-4. **Review HANDOFFs** — read `.claude/FRACTAL/workstreams/{name}/HANDOFF.md` after each workstream
+3. **Monitor progress** — `python3 .claude/fractal/router.py status`
+4. **Review HANDOFFs** — read `.claude/fractal/workstreams/{name}/HANDOFF.md` after each workstream
 5. **Commit phase work** — `/commit-summarize` after all workstreams in a phase complete
 6. **Milestone gates** — `/gap-analysis` at milestone boundaries
 
@@ -460,7 +460,7 @@ Feature Leads run as **background agents** by default (Agent tool). This is the 
 
 **Spawn a Feature Lead:**
 ```
-Use the feature-lead agent to execute workstream: .claude/FRACTAL/workstreams/my-workstream.md
+Use the feature-lead agent to execute workstream: .claude/fractal/workstreams/my-workstream.md
 ```
 
 The Feature Lead agent will:
@@ -500,17 +500,17 @@ FRACTAL skills fall into two categories based on who uses them and where:
 Starting a new epic:
   1. In main session: plan the epic and generate BLUEPRINT + workstream PRDs
   2. /fractal-init BLUEPRINT-MyEpic.yaml
-  3. python3 .claude/FRACTAL/router.py next → spawn Feature Lead agents
+  3. python3 .claude/fractal/router.py next → spawn Feature Lead agents
 
 Ongoing:
-  1. Check router status: python3 .claude/FRACTAL/router.py status
+  1. Check router status: python3 .claude/fractal/router.py status
   2. Spawn Feature Lead agents for ready workstreams
   3. Review HANDOFF.md files as they complete
 
 Phase complete:
   1. Review all HANDOFF.md files in the phase
   2. /commit-summarize
-  3. python3 .claude/FRACTAL/router.py next → begin next phase
+  3. python3 .claude/fractal/router.py next → begin next phase
 
 Milestone boundary:
   1. /gap-analysis
@@ -522,9 +522,9 @@ Milestone boundary:
 ## 11. Switching Epics
 
 When starting a new epic:
-1. Create `BLUEPRINT-{NewEpic}.yaml` in `.claude/FRACTAL/`
+1. Create `BLUEPRINT-{NewEpic}.yaml` in `.claude/fractal/`
 2. Update `BLUEPRINT_PATH` in `router.py` to point to the new file
-3. Run `python3 .claude/FRACTAL/router.py init` — this overwrites `.state.json`
+3. Run `python3 .claude/fractal/router.py init` — this overwrites `.state.json`
 4. Old workstream PRDs remain as historical reference
 
 To run two epics concurrently, use separate state files:
@@ -563,7 +563,7 @@ After setup, your project should look like:
 │   ├── fractal-init/SKILL.md
 │   ├── pulse/SKILL.md
 │   └── handoff/SKILL.md
-└── FRACTAL/
+└── fractal/
     ├── router.py               # Deterministic state machine
     ├── BLUEPRINT-{Epic}.yaml   # One per epic (committed)
     ├── .state.json             # Runtime state (gitignored)

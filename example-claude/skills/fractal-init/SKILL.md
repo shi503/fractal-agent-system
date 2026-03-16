@@ -7,26 +7,26 @@ disable-model-invocation: true
 
 # FRACTAL Init
 
-You are bootstrapping a new FRACTAL epic session. The argument is the blueprint filename (located in `.claude/FRACTAL/`).
+You are bootstrapping a new FRACTAL epic session. The argument is the blueprint filename (located in `.claude/fractal/`).
 
 ## Steps
 
 1. **Verify infrastructure:**
    ```bash
-   ls .claude/FRACTAL/router.py
-   ls .claude/FRACTAL/$ARGUMENTS
+   ls .claude/fractal/router.py
+   ls .claude/fractal/$ARGUMENTS
    ```
    If either is missing, stop and report the missing file.
 
 2. **Initialize state:**
    ```bash
-   python3 .claude/FRACTAL/router.py init
+   python3 .claude/fractal/router.py init
    ```
    Display the full output.
 
 3. **Display ready workstreams:**
    ```bash
-   python3 .claude/FRACTAL/router.py next
+   python3 .claude/fractal/router.py next
    ```
    Display the full output including model tier for each workstream.
 
@@ -40,10 +40,10 @@ You are bootstrapping a new FRACTAL epic session. The argument is the blueprint 
 5. **Remind:**
    Before starting each workstream, run:
    ```bash
-   python3 .claude/FRACTAL/router.py update <FeatureLeadName> IN_PROGRESS
+   python3 .claude/fractal/router.py update <FeatureLeadName> IN_PROGRESS
    ```
    After HANDOFF accepted, run:
    ```bash
-   python3 .claude/FRACTAL/router.py update <FeatureLeadName> COMPLETE
-   python3 .claude/FRACTAL/router.py next
+   python3 .claude/fractal/router.py update <FeatureLeadName> COMPLETE
+   python3 .claude/fractal/router.py next
    ```

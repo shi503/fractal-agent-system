@@ -34,7 +34,7 @@ Run your project's build and typecheck commands. Examples (customize for your st
 ### Step 2: Generate HANDOFF.md
 
 Determine the output path from the FeatureLead name:
-- `FeatureLead-PreferencesUI` → `.claude/FRACTAL/workstreams/preferences-ui/HANDOFF.md`
+- `FeatureLead-PreferencesUI` → `.claude/fractal/workstreams/preferences-ui/HANDOFF.md`
 
 Write the HANDOFF.md with this structure:
 
@@ -65,26 +65,32 @@ Write the HANDOFF.md with this structure:
 - [Any deviations from the PRD, with rationale]
 - [Or: "Implemented as specified"]
 
-## Deterministic Eval
+## Verification Evidence
 
-- [Primary build command]: **PASS** / **FAIL**
-- [Typecheck / secondary check]: **PASS** / **FAIL** / N/A
+| Gate | Command | Result | Notes |
+|------|---------|--------|-------|
+| Lint | `[project lint command]` | PASS / FAIL | |
+| Build | `[project build command]` | PASS / FAIL | |
+| Typecheck | `[project typecheck command]` | PASS / FAIL / N/A | |
+| Tests | `[project test command]` | PASS (X/Y) / FAIL / N/A | [new specs added, if any] |
+| Quality pass | `/quality-pass` | PASS / SKIP | [slop items removed, if any] |
+<!-- | Compliance scan | `[scan commands]` | PASS / FAIL | Enable for regulated projects | -->
 ```
 
 ### Step 3: Update Router State
 
 ```bash
-python3 .claude/FRACTAL/router.py update <FeatureLeadName> COMPLETE
+python3 .claude/fractal/router.py update <FeatureLeadName> COMPLETE
 ```
 
 ### Step 4: Display Next Ready Workstreams
 
 ```bash
-python3 .claude/FRACTAL/router.py next
+python3 .claude/fractal/router.py next
 ```
 
 Print the output. If all workstreams are COMPLETE, print: "Epic complete — review all HANDOFF.md files before closing."
 
 ### Step 5: Remind
 
-"Review `.claude/FRACTAL/workstreams/<name>/HANDOFF.md` before accepting. Verify all acceptance criteria are checked off before marking the epic phase complete."
+"Review `.claude/fractal/workstreams/<name>/HANDOFF.md` before accepting. Verify all acceptance criteria are checked off before marking the epic phase complete."

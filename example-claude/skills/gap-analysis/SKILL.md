@@ -9,7 +9,7 @@ You are conducting a structured gap analysis for **{project}** at a milestone bo
 
 ## Context Files (Read First)
 
-1. Your project's Strategist document (e.g. `.claude/FRACTAL/STRATEGIST-{project}.md`) — §8 defines milestones, evaluator archetypes, and gap analysis cadence
+1. Your project's Strategist document (e.g. `.claude/fractal/STRATEGIST-{project}.md`) — §8 defines milestones, evaluator archetypes, and gap analysis cadence
 2. `{project-guides}/platform-strategy.md` (or equivalent) — platform evolution phases and decision principles
 3. Previous gap analyses for methodology reference (if any), e.g. in `{project-specs}/PRD/` or `docs/gap-analysis/`
 

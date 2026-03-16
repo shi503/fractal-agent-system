@@ -7,15 +7,17 @@ Reads the blueprint YAML, tracks workstream status in a state file,
 and resolves the dependency graph without LLM involvement.
 
 Usage:
-    python3 .claude/FRACTAL/router.py init                              # Initialize state from blueprint
-    python3 .claude/FRACTAL/router.py next                              # Get next ready workstreams
-    python3 .claude/FRACTAL/router.py update <workstream_name> <status> # Update workstream status
-    python3 .claude/FRACTAL/router.py status                            # Print full state overview
-    python3 .claude/FRACTAL/router.py pulse <path_to_PULSE.md>          # Check heartbeat for escalation
+    python3 router.py init                                      # Initialize state from blueprint
+    python3 router.py next                                      # Get next ready workstreams
+    python3 router.py update <workstream_name> <status>         # Update workstream status
+    python3 router.py status                                    # Print full state overview
+    python3 router.py pulse <path_to_PULSE.md>                  # Check heartbeat for escalation
+
+    # Override blueprint path (avoids editing the BLUEPRINT_PATH constant):
+    python3 router.py --blueprint BLUEPRINT-MyEpic.yaml init
+    python3 router.py --blueprint BLUEPRINT-MyEpic.yaml next
 
 Statuses: NOT_STARTED | IN_PROGRESS | COMPLETE
-
-To switch epics: update BLUEPRINT_PATH below to the target blueprint file.
 """
 
 import yaml
@@ -26,7 +28,8 @@ import re
 from datetime import datetime
 
 # ---------------------------------------------------------------------------
-# Configuration — update BLUEPRINT_PATH when switching epics
+# Configuration — update BLUEPRINT_PATH when switching epics,
+# or use --blueprint <filename> on the command line to override.
 # ---------------------------------------------------------------------------
 
 BLUEPRINT_PATH = os.path.join(
@@ -36,11 +39,30 @@ BLUEPRINT_PATH = os.path.join(
 STATE_PATH = os.path.join(os.path.dirname(__file__), ".state.json")
 
 
+def _resolve_blueprint_path(args):
+    """
+    Checks for --blueprint flag in args and returns (blueprint_path, remaining_args).
+    Falls back to the BLUEPRINT_PATH constant if no flag is provided.
+    """
+    if "--blueprint" in args:
+        idx = args.index("--blueprint")
+        if idx + 1 >= len(args):
+            print("Error: --blueprint requires a filename argument.")
+            sys.exit(1)
+        bp_file = args[idx + 1]
+        remaining = args[:idx] + args[idx + 2:]
+        bp_path = bp_file if os.path.isabs(bp_file) else os.path.join(
+            os.path.dirname(__file__), bp_file
+        )
+        return bp_path, remaining
+    return BLUEPRINT_PATH, args
+
+
 # ---------------------------------------------------------------------------
 # Blueprint Parsing
 # ---------------------------------------------------------------------------
 
-def load_blueprint():
+def load_blueprint(blueprint_path=None):
     """
     Loads the blueprint file and returns the parsed YAML data.
 
@@ -48,16 +70,19 @@ def load_blueprint():
     - Pure .yaml/.yml files: read directly
     - .md files: extract the fenced ```yaml block
 
+    Args:
+        blueprint_path: Override path. Falls back to the module-level BLUEPRINT_PATH.
+
     Returns:
         list[dict]: A list of phases, each containing a list of workstreams.
     """
-    if BLUEPRINT_PATH.endswith(('.yaml', '.yml')):
-        with open(BLUEPRINT_PATH, "r") as f:
+    path = blueprint_path or BLUEPRINT_PATH
+    if path.endswith(('.yaml', '.yml')):
+        with open(path, "r") as f:
             content = f.read()
-        # Strip comment-only lines at top for cleaner parsing
         return yaml.safe_load(content)
     else:
-        with open(BLUEPRINT_PATH, "r") as f:
+        with open(path, "r") as f:
             for line in f:
                 if line.strip() == "```yaml":
                     break
@@ -97,14 +122,14 @@ def save_state(state):
 # Commands
 # ---------------------------------------------------------------------------
 
-def cmd_init():
+def cmd_init(blueprint_path=None):
     """
     Initializes the state file from the blueprint.
 
     Reads the blueprint file, extracts all workstream names, and creates
     a state file with each workstream set to NOT_STARTED.
     """
-    blueprint = load_blueprint()
+    blueprint = load_blueprint(blueprint_path)
     state = {}
     for phase in blueprint:
         for workstream in phase["workstreams"]:
@@ -115,7 +140,7 @@ def cmd_init():
         print(f"  {name}: {status}")
 
 
-def cmd_next():
+def cmd_next(blueprint_path=None):
     """
     Gets the next workstream(s) that are ready to be executed.
 
@@ -125,7 +150,7 @@ def cmd_next():
 
     Prints the names of all ready workstreams to stdout, one per line.
     """
-    blueprint = load_blueprint()
+    blueprint = load_blueprint(blueprint_path)
     state = load_state()
     ready = []
 
@@ -268,24 +293,29 @@ if __name__ == "__main__":
         print(__doc__)
         sys.exit(1)
 
-    command = sys.argv[1]
+    bp_path, args = _resolve_blueprint_path(sys.argv[1:])
+    if not args:
+        print(__doc__)
+        sys.exit(1)
+
+    command = args[0]
 
     if command == "init":
-        cmd_init()
+        cmd_init(bp_path)
     elif command == "next":
-        cmd_next()
+        cmd_next(bp_path)
     elif command == "update":
-        if len(sys.argv) != 4:
+        if len(args) != 3:
             print("Usage: python3 router.py update <workstream_name> <status>")
             sys.exit(1)
-        cmd_update(sys.argv[2], sys.argv[3])
+        cmd_update(args[1], args[2])
     elif command == "status":
         cmd_status()
     elif command == "pulse":
-        if len(sys.argv) != 3:
+        if len(args) != 2:
             print("Usage: python3 router.py pulse <path_to_PULSE.md>")
             sys.exit(1)
-        cmd_pulse(sys.argv[2])
+        cmd_pulse(args[1])
     else:
         print(f"Error: Unknown command '{command}'")
         print(__doc__)

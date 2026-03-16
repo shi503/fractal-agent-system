@@ -66,7 +66,7 @@ The pilot upgraded Sub-Agents from `haiku` to `sonnet` mid-flight. Haiku halluci
 
 **Mark `IN_PROGRESS` before starting, COMPLETE only after HANDOFF accepted.** The state file is the ground truth for parallel orchestration. If you start work without marking IN_PROGRESS, you risk another session starting the same workstream. If you mark COMPLETE before reviewing the HANDOFF, you lose the review gate.
 
-**`.state.json` is a runtime artifact — gitignore it.** It will conflict across branches. Add `.claude/FRACTAL/.state.json` to `.gitignore` before the first commit.
+**`.state.json` is a runtime artifact — gitignore it.** It will conflict across branches. Add `.claude/fractal/.state.json` to `.gitignore` before the first commit.
 
 ---
 
@@ -88,7 +88,7 @@ The pilot upgraded Sub-Agents from `haiku` to `sonnet` mid-flight. Haiku halluci
 
 **HANDOFF.md must include build gate results.** A HANDOFF without build evidence is opinion, not evidence. The template includes a §5 Deterministic Eval section. Require Feature Leads to fill it in. A HANDOFF that says "ng build: PASS" is substantially more trustworthy than one that says "all acceptance criteria met."
 
-**Stray HANDOFF.md files are runtime artifacts — don't commit them.** The correct path for a HANDOFF is `.claude/FRACTAL/workstreams/{kebab-name}/HANDOFF.md`. Files that land at `.claude/FRACTAL/HANDOFF.md` (missing the workstream subdirectory) are stray artifacts. Add `.claude/FRACTAL/workstreams/*/HANDOFF.md` and `.claude/FRACTAL/workstreams/*/PULSE.md` to `.gitignore`.
+**Stray HANDOFF.md files are runtime artifacts — don't commit them.** The correct path for a HANDOFF is `.claude/fractal/workstreams/{kebab-name}/HANDOFF.md`. Files that land at `.claude/fractal/HANDOFF.md` (missing the workstream subdirectory) are stray artifacts. Add `.claude/fractal/workstreams/*/HANDOFF.md` and `.claude/fractal/workstreams/*/PULSE.md` to `.gitignore`.
 
 ### Skill vs Bash — The Two Execution Modes
 
@@ -125,7 +125,7 @@ The `feature-lead.md` agent definition includes both approaches: **bash as the p
 | Run FRACTAL pipeline interactively in the Architect's conversation | No PULSE/HANDOFF artifacts — conversation history is the only trail | Spawn Feature Lead agents for implementation; keep Architect session for orchestration only |
 | Assume `/pulse` and `/handoff` work inside background agents | They are interactive-session skills — background agents cannot invoke slash commands | Use bash equivalents in `feature-lead.md`; skills only work in interactive Claude Code sessions |
 | Hardcode epic-specific references in general-purpose skills | Misleads future epics | Skills must be generic; epic context lives in workstream PRDs |
-| Keep duplicate `router.py` in multiple locations | They diverge independently — the canonical source falls behind the working version | One canonical source (`ROUTING_LOGIC/router.py`), copy to `.claude/FRACTAL/` per the setup guide |
+| Keep duplicate `router.py` in multiple locations | They diverge independently — the canonical source falls behind the working version | One canonical source (`ROUTING_LOGIC/router.py`), copy to `.claude/fractal/` per the setup guide |
 | Make all workstreams sequential | Misses parallelism, epics take 4x longer than necessary | Default `dependencies: []`, add dependencies only for true sequential constraints |
 | Paste guide content inline into workstream PRDs | Bloats context window, reduces Feature Lead focus | Reference guides by path only |
 | Use haiku for typed/framework workstreams | Hallucination on typed code, incorrect patterns, framework misuse | Sonnet for all code-writing tasks; haiku only for pure text/SQL |

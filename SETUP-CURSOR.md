@@ -37,7 +37,7 @@ mkdir -p .cursor/skills/commit-summarize
 Copy the router from this repo into your project:
 
 ```bash
-cp fractal-agents-system/ROUTING_LOGIC/router.py .fractal/router.py
+cp fractal-agent-system/ROUTING_LOGIC/router.py .fractal/router.py
 # Or, if this repo IS your project: cp ROUTING_LOGIC/router.py .fractal/router.py
 ```
 
@@ -69,13 +69,16 @@ Commit: `router.py`, `BLUEPRINT-*.yaml`, and workstream PRD `.md` files. Do not 
 
 ## 5. Install Cursor Rules
 
-Copy the FRACTAL rule files from this repo into your project:
+Create Cursor rule files from the Claude Code agent definitions. The source agents live in `example-claude/agents/`:
 
 ```bash
-cp fractal-agents-system/cursor/rules/fractal-architect.mdc    .cursor/rules/
-cp fractal-agents-system/cursor/rules/fractal-feature-lead.mdc .cursor/rules/
-cp fractal-agents-system/cursor/rules/fractal-sub-agent.mdc    .cursor/rules/
+# Copy agent definitions as Cursor rules (adapt frontmatter for .mdc format)
+cp fractal-agent-system/example-claude/agents/architect.md     .cursor/rules/fractal-architect.mdc
+cp fractal-agent-system/example-claude/agents/feature-lead.md  .cursor/rules/fractal-feature-lead.mdc
+cp fractal-agent-system/example-claude/agents/sub-agent.md     .cursor/rules/fractal-sub-agent.mdc
 ```
+
+After copying, edit each `.mdc` file to adapt the Claude Code agent frontmatter (`name`, `model`, `color`) to Cursor's rule format. The body content (system prompt, protocols, constraints) works as-is.
 
 - **fractal-architect.mdc** — Apply when working in `.fractal/` or on BLUEPRINT/workstreams. Architect mode: no implementation code, only BLUEPRINTs, PRDs, HANDOFF eval.
 - **fractal-feature-lead.mdc** — Apply when executing a workstream (e.g. when the active file is a workstream PRD under `.fractal/workstreams/`).
@@ -87,14 +90,18 @@ Cursor does not have a "model" field in rules; model selection is per chat or pe
 
 ## 6. Install Cursor Skills
 
-Copy the skill directories:
+Copy the skill directories from the Claude Code bundle:
 
 ```bash
-cp -r fractal-agents-system/cursor/skills/fractal-init     .cursor/skills/
-cp -r fractal-agents-system/cursor/skills/pulse            .cursor/skills/
-cp -r fractal-agents-system/cursor/skills/handoff         .cursor/skills/
-cp -r fractal-agents-system/cursor/skills/commit-summarize .cursor/skills/
+cp -r fractal-agent-system/example-claude/skills/fractal-init     .cursor/skills/
+cp -r fractal-agent-system/example-claude/skills/pulse            .cursor/skills/
+cp -r fractal-agent-system/example-claude/skills/handoff          .cursor/skills/
+cp -r fractal-agent-system/example-claude/skills/commit-summarize .cursor/skills/
+cp -r fractal-agent-system/example-claude/skills/gap-analysis     .cursor/skills/
+cp -r fractal-agent-system/example-claude/skills/quality-pass     .cursor/skills/
 ```
+
+After copying, update the `.claude/fractal/` paths in each SKILL.md to `.fractal/` (see §7 below).
 
 Skills are invoked by name in Cursor (e.g. fractal-init, pulse, handoff, commit-summarize). When you run a skill, pass the argument (e.g. blueprint filename or FeatureLead name) as specified in each SKILL.md.
 
@@ -102,7 +109,7 @@ Skills are invoked by name in Cursor (e.g. fractal-init, pulse, handoff, commit-
 
 ## 7. Path Conventions in Skills
 
-The Cursor skills in this repo use **`.fractal/`** as the FRACTAL root. If you use a different path (e.g. `.claude/FRACTAL/`), do a find-replace in the copied skills:
+The Cursor skills in this repo use **`.fractal/`** as the FRACTAL root. If you use a different path (e.g. `.claude/fractal/`), do a find-replace in the copied skills:
 
 - `.fractal/` → your FRACTAL root
 - `python3 .fractal/router.py` → `python3 <your-path>/router.py`
@@ -184,7 +191,7 @@ Model selection for the Task is independent of the rule; use Sonnet or similar f
 | Aspect | Claude Code | Cursor |
 |--------|-------------|--------|
 | Agent definitions | `.claude/agents/*.md` with `model:` frontmatter | `.cursor/rules/*.mdc` — no model in file; model at invocation |
-| FRACTAL root | `.claude/FRACTAL/` | `.fractal/` (or your choice) |
+| FRACTAL root | `.claude/fractal/` | `.fractal/` (or your choice) |
 | Skills | `.claude/skills/*/SKILL.md` | `.cursor/skills/*/SKILL.md` |
 | Sub-agent spawn | Agent tool with agent name | Task tool + Sub-Agent rule / instructions |
 
@@ -202,7 +209,7 @@ After setup:
 ├── STRATEGIST-{project}.md    # Optional; from Strategist interview
 ├── BLUEPRINT-{Epic}.yaml
 ├── .state.json               # Gitignored
-├── EVAL_TEMPLATES/           # Optional; copy from src/ or create
+├── EVAL_TEMPLATES/           # Optional; copy from docs/ or create
 └── workstreams/
     ├── {workstream-1}.md     # PRDs (committed)
     ├── {workstream-2}.md
