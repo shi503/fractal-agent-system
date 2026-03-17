@@ -1,0 +1,36 @@
+# BLUEPRINT: M1 — Core Data Model + Auth
+# TaskFlow Milestone 1 — establishes the schema, auth, and team invite foundation
+#
+# Gates (all must pass before M1 is complete):
+#   - npx prisma migrate deploy succeeds on clean Supabase instance
+#   - Auth E2E: user signs up → creates team → invites member → member logs in (Playwright)
+#   - RLS verified: Team A user cannot read Team B issues
+#
+# Dependency order is serial — schema must be stable before auth wiring,
+# auth must be wired before invite flow can be built.
+#
+# Run: python3 .claude/fractal/router.py --blueprint .claude/fractal/BLUEPRINT-M1-CoreDataModel.yaml init
+# Then: python3 .claude/fractal/router.py next
+
+- name: "M1.1 — Prisma Schema + Seed"
+  workstreams:
+    - feature_lead: FeatureLead-SchemaPrisma
+      model: haiku
+      prd: .claude/fractal/workstreams/m1-schema-prisma.md
+      dependencies: []
+
+- name: "M1.2 — Auth Setup"
+  workstreams:
+    - feature_lead: FeatureLead-AuthSetup
+      model: sonnet
+      prd: .claude/fractal/workstreams/m1-auth-setup.md
+      dependencies:
+        - FeatureLead-SchemaPrisma
+
+- name: "M1.3 — Team Invite Flow"
+  workstreams:
+    - feature_lead: FeatureLead-TeamInviteFlow
+      model: sonnet
+      prd: .claude/fractal/workstreams/m1-team-invite-flow.md
+      dependencies:
+        - FeatureLead-AuthSetup

@@ -24,4 +24,10 @@ The Architect triages OPEN issues before authoring each new BLUEPRINT phase.
 
 ---
 
-_No issues yet. Delete this template section once you add your first real issue._
+## [2026-03-17] [MINOR] package.json#prisma.seed deprecated in Prisma 6
+
+**Discovered by:** FeatureLead-SchemaPrisma (M1.1 handoff eval)
+**Symptom:** `npx prisma validate` emits: "The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7."
+**Impact:** Non-blocking — seed still runs. Will break in Prisma 7.
+**Recommended fix:** Move seed config into `prisma.config.ts`, remove `"prisma"` key from `package.json`.
+**Status:** OPEN
