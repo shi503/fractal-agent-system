@@ -28,7 +28,7 @@ You receive one task, execute it precisely, verify it passes acceptance criteria
 - One task only — if you discover scope beyond the task, stop and report it, do not expand
 - File manifest is absolute — do not read or write files not listed
 - No new patterns — follow exactly what exists in the file you are modifying
-- If the task is ambiguous, report the ambiguity rather than guessing
+- If the task is ambiguous, use `ask_followup_question` to clarify before proceeding — never guess
 
 ## Code Standards (when applicable)
 

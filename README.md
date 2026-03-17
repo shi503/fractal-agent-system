@@ -11,13 +11,30 @@
 git clone https://github.com/shi503/fractal-agent-system.git
 
 # 2. Copy into your project as .claude
-cp -r fractal-agent-system/example-claude /path/to/your-project/.claude
+cp -r ./example-claude ./.claude
 
-# 3. Verify PyYAML
+# (optional). Copy your project's context docs into .claude/fractal/intake/ (see examples)
+cp -r ./docs/frontend-dev-guide.md ./.claude/fractal/intake/
+cp -r ./docs/platform-strategy.md ./.claude/fractal/intake/
+cp -r ./docs/soc2-compliance.md ./.claude/fractal/intake/
+cp -r ./docs/testing-patterns.md ./.claude/fractal/intake/
+
+# 3. File setup done. Open Claude Code in your project, run the strategist init
+new prompt:  "you are @.claude/agents/strategist.md let's run the interview and setup our project"
+# Answer the questions and guide the agent as you see fit!
+# After, you can ask about what you two came up with. 
+
+# 4. Install your project (if you haven't already).  And verify PyYAML
+# new project (that requires project dependencies setup) 
+new prompt: "You are the @.claude/agents/architect.md get an understanding of the project and notice that we haven't setup our project for runtime.  Let's setup our project dependencies and get an understanding of @.claude/fractal/FRACTALSYSTEM-taskflow.md and let's get started on project planning."
+# Verify python is working
 python3 -c "import yaml; print('ok')"
-# If missing: pip install pyyaml
+# existing project (just kick off the architect)
+new prompt: "You are the @.claude/agents/architect.md get an understanding of the project and we'll use @.claude/fractal/FRACTALSYSTEM-taskflow.md to get started on project planning."
 
-# 4. Done. Open Claude Code in your project.
+
+# 5. Invoke the Architect and plan your Phases and PRDs
+
 ```
 
 No file edits required before first use. The sample `CLAUDE.md`, agents, skills, and eval templates are pre-filled with a realistic demo project (TaskFlow kanban tracker). Customize later.
@@ -227,3 +244,9 @@ You might want to use this if you:
 - Don't have access to Co-work, OpenClaw (eg. Enterprise restrictions, SecOps concerns, etc..)
 - You are coding through more restrictived API keys or have BAAs that limit tool scope
 - You want to experiment with context engineering and orchestration
+
+Note on Ask User Prompts and **Dangerously Accept Edits**: 
+- When users are prompted with `ask_followup_question` agents will stop. 
+- It's advised to start with semi-autonomous or managing user prompts until you get a feel for Fractal. 
+- Enabling "YOLO mode" with `--dangerously-skip-permissions` flag is closer to the automated agent orchestration experience, but you should know what it is doing before enabling this. 
+- It's **strongly** advised that you follow Anthropic's guide to secure your environment before enabling this flag. 

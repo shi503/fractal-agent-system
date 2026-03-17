@@ -160,6 +160,19 @@ python3 .claude/fractal/router.py pulse "${PULSE_PATH}"
 ```
 Set `escalation_needed: true` and describe blockers if you cannot continue without external input.
 
+**Interactive escalation:** When `escalation_needed` is true and you are in interactive session mode, immediately follow the PULSE with `ask_followup_question` to surface the blocker and get user direction:
+
+```
+ask_followup_question(
+  question: "<describe the blocker and what you've tried so far>",
+  suggestions: [
+    "Provide guidance to unblock",
+    "Descope this part of the workstream",
+    "Escalate to the Architect"
+  ]
+)
+```
+
 _Interactive session alternative:_ type `/pulse {FeatureLeadName}` — the skill handles the above.
 
 ## Delegation to Sub-Agents

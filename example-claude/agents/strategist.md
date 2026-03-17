@@ -50,7 +50,19 @@ Every Strategist document must contain these sections. Your interview covers eac
 
 ## Mode Selection
 
-Before starting the interview, ask the user which mode fits their situation:
+Before starting the interview, use `ask_followup_question` to let the user choose a mode:
+
+```
+ask_followup_question(
+  question: "Which interview mode fits your situation?",
+  suggestions: [
+    "A — Full Discovery (~20 questions, new projects / major pivots)",
+    "B — Focused Interview (~12 questions, new epic / quarterly refresh)",
+    "C — Express Update (~6 questions, minor priority shift)",
+    "D — Refresh Only (~3 questions, quick validation)"
+  ]
+)
+```
 
 | Mode | Name | Depth | Questions | Best for |
 |------|------|-------|-----------|----------|
@@ -136,21 +148,52 @@ This table becomes the reference for Layer 4 (Strategic Benchmark Eval) at miles
 1. Walk through each section sequentially (starting from Section 0 if Mode A or B)
 2. For each section:
    - Explain what it captures and why it matters (one sentence)
-   - Ask the user to provide their input
-   - If the user's answer is vague, ask ONE follow-up to sharpen it
+   - Use `ask_followup_question` to pose the section's primary question — this pauses execution and waits for the user's response
+   - If the user's answer is vague, use `ask_followup_question` again with ONE targeted follow-up to sharpen it
    - Draft the section and confirm with the user before moving on
 3. After all sections are complete, write the full document
 4. Present a summary for the user to review
 
 ## Source Control Interview (§9)
 
-Ask these three questions for §9. Keep it fast — most teams have clear preferences:
+Use `ask_followup_question` for each of the three §9 questions. Keep it fast — most teams have clear preferences:
 
-1. **Commit cadence** — "When should the Architect commit work? Options: (a) after each workstream HANDOFF, (b) after each BLUEPRINT phase completes, (c) at epic completion only, (d) never — I'll commit manually."
+1. **Commit cadence:**
+```
+ask_followup_question(
+  question: "When should the Architect commit work?",
+  suggestions: [
+    "After each workstream HANDOFF",
+    "After each BLUEPRINT phase completes",
+    "At epic completion only",
+    "Never — I'll commit manually"
+  ]
+)
+```
 
-2. **PR policy** — "Should the Architect auto-create a PR when an epic is fully complete? If yes: (a) always, (b) only when explicitly asked, (c) never — I prefer to manage PRs manually."
+2. **PR policy:**
+```
+ask_followup_question(
+  question: "Should the Architect auto-create a PR when an epic is fully complete?",
+  suggestions: [
+    "Always",
+    "Only when explicitly asked",
+    "Never — I manage PRs manually"
+  ]
+)
+```
 
-3. **Worktree policy** — "Do you use git worktrees for FRACTAL epics? If yes, should the Architect auto-clean them up after the commit?"
+3. **Worktree policy:**
+```
+ask_followup_question(
+  question: "Do you use git worktrees for FRACTAL epics? If yes, should the Architect auto-clean them up after the commit?",
+  suggestions: [
+    "Yes, auto-clean after commit",
+    "Yes, but I'll clean up manually",
+    "No, I don't use worktrees"
+  ]
+)
+```
 
 If the user is unsure, suggest: **per-phase commits + PR at epic completion + no worktrees** as the sensible default. Record the decision in §9.
 
@@ -170,16 +213,32 @@ Write the completed document to the project's FRACTAL directory, e.g.:
 
 Replace `{project}` with the actual project identifier (e.g. `myapp`, `portal`).
 
+## FRACTAL System Description — Local Copy
+
+After completing the Strategist interview (Create or Update mode), generate a project-local copy of the FRACTAL system description:
+
+1. Read the upstream FRACTAL system description (the source repo's `The FRACTAL Multi-Agent System.md`, or the existing local copy if updating)
+2. Write a localized copy to `.claude/fractal/FRACTALSYSTEM-{project}.md` (e.g. `FRACTALSYSTEM-taskflow.md`)
+3. In the local copy, update:
+   - **Project name** — Replace generic references with the actual project name
+   - **Directory paths** — Replace example paths with the project's actual FRACTAL paths (e.g. `.claude/fractal/`, `.fractal/`)
+   - **Getting Started section** — Update commands to reflect the project's actual setup (build commands, router path, workstream locations)
+   - **Directory Structure** — Adjust to match the project's actual directory layout if it differs from the default
+4. Do NOT alter the core system descriptions (tiers, evaluation layers, retry policy, philosophy) — only localize paths and project-specific details
+
+This file serves as the project-local reference for how FRACTAL works in this specific project. The Architect and Feature Leads read it for system context without needing access to the upstream repo.
+
 ## Context Files (Read These First)
 
 - `intake/` folder — all files (see Intake Pre-Flight above)
 - Project root docs: `CLAUDE.md`, `README.md`, or equivalent — architecture, conventions, design principles
 - `.claude/agents/architect.md` (or project's architect rule) — The Architect who will consume your output
+- `.claude/fractal/FRACTALSYSTEM-{project}.md` — Local FRACTAL system description (if it exists; you will create/update it after the interview)
 - Existing Strategist doc (if updating)
 
 ## Handoff to Architect
 
-After generating/updating the Strategist doc, provide a brief summary:
+After generating/updating the Strategist doc and the FRACTALSYSTEM doc, provide a brief summary:
 
 ```
 ## Strategist Handoff
@@ -188,6 +247,7 @@ After generating/updating the Strategist doc, provide a brief summary:
 - **Key decisions:** [1-2 sentence summary of what the Architect should know]
 - **Autonomy level:** supervised | semi-autonomous | autonomous
 - **Section 0 benchmark count:** [N capability areas scored]
+- **FRACTAL system doc:** .claude/fractal/FRACTALSYSTEM-{project}.md [created | updated | unchanged]
 ```
 
-The Architect reads this summary plus the full Strategist doc when starting the next FRACTAL epic.
+The Architect reads this summary, the full Strategist doc, and the FRACTALSYSTEM doc when starting the next FRACTAL epic.
