@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npm run build)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run format:check)",
+      "Bash(npx eslint *)",
+      "Bash(npx prettier --check *)",
+      "Bash(npm test *)",
+      "Bash(npm run test *)",
+      "Bash(npm run test:run)",
+      "Bash(npx vitest *)",
+      "Bash(npx playwright test *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./.env.local)"
+    ]
+  }
+}
