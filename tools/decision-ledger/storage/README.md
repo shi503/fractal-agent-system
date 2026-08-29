@@ -35,7 +35,7 @@ Inside that directory:
 ├── BI-1.md
 ├── L2-01a.md
 ├── .index.sqlite       ← DERIVED — delete and rebuild at any time
-└── people.yaml         ← optional mirror of schema/people.yaml
+└── people.yaml         ← optional mirror of schema/people.example.yaml
 ```
 
 ## FM-1 Guard (canonical drift detection)

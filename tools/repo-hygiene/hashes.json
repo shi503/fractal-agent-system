@@ -15,7 +15,6 @@
     "79f2aac1c6034af3a1d1d568dbf8bb8cc21295a7578d3b809794567f5c38686b",
     "835f4b80f2dc403d1a7ec336aaebc6290a56e36b6185a4ae67f01a4e96cc0a58",
     "85f5e10431f69bc2a14046a13aabaefc660103b6de7a84f75c4b96181d03f0b5",
-    "8670cd4bc81724fd3677ba631cd815397a01dbe4333a6e742fbc14920d268ddd",
     "9c1c934e33089936612ec2b89ad42da2b6b32a2bdd12e07069a4c26683f7c2d5",
     "af1a9d8a6fdc007f71ac817e9e26f2c6be507ae408c8858d0fe27cb9c46c2c10",
     "b43401729a5bad3f94ef6a8799a78909fc3d7066a564e2825f1faa601f475c77",
@@ -27,7 +26,7 @@
     "ff02ace7447923a6e77711c745c6b5773d7becd9ae9cad46967e53d9fbfa76fa"
   ],
   "min_token_len": 3,
-  "skipped_nohash_term_count": 7,
+  "skipped_nohash_term_count": 8,
   "skipped_regex_term_count": 2,
   "source": "a private planning repository's cleartext denylist (not published here) \u2014 do not hand-edit this file"
 }

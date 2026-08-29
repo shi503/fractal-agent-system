@@ -64,8 +64,8 @@ Same as VM path (Path B). `--user` timers require an active login session unless
 cd tools/scheduled-fractal-runner
 
 # 1. Set your repos root
-export FRACTAL_REPOS_ROOT="/home/you/src"       # adjust to your checkout location
-echo 'export FRACTAL_REPOS_ROOT="/home/you/src"' >> ~/.bashrc   # persist
+export FRACTAL_REPOS_ROOT="$HOME/src"       # adjust to your checkout location
+echo 'export FRACTAL_REPOS_ROOT="$HOME/src"' >> ~/.bashrc   # persist
 
 # 2. Dry-run
 ./run.sh --mode plan

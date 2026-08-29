@@ -70,7 +70,7 @@ fails without the fix, passes with it.
 
 ## What's synthetic in this port
 
-`schema/people.yaml` and `schema/test-fixtures/` are a synthetic registry and
+`schema/people.example.yaml` and `schema/test-fixtures/` are a synthetic registry and
 fixture corpus for this repository, distinct from `fixtures/taskflow/`'s own
 decision-log fixtures — the two never share an ID. `import-pattern/` carries
 the generic parts of a v1-table importer, demonstrated against

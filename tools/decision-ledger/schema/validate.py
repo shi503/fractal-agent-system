@@ -258,14 +258,14 @@ def load_people() -> set[str]:
     Resolution order:
       1. $DL_PEOPLE_PATH, if set — lets a caller point at a project-specific
          people registry without editing this file.
-      2. tools/decision-ledger/schema/people.yaml (the default registry
+      2. tools/decision-ledger/schema/people.example.yaml (the bundled example registry
          shipped alongside the validator).
     """
     import os
 
     override = os.environ.get("DL_PEOPLE_PATH", "").strip()
     override_path = Path(override) if override else None
-    fallback_path = SCHEMA_DIR / "people.yaml"
+    fallback_path = SCHEMA_DIR / "people.example.yaml"
 
     if override_path and override_path.exists():
         people_path = override_path
