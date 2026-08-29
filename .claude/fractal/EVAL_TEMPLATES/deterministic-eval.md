@@ -12,7 +12,6 @@ _Completed by Architect after Feature Lead HANDOFF. All items must pass before m
 | Stack | Command |
 |-------|---------|
 | Next.js / React | `npm run lint` or `npx eslint .` |
-| Angular | `ng lint` |
 | Python | `ruff check .` or `flake8` |
 | Go | `golangci-lint run` |
 | Rust | `cargo clippy` |
@@ -27,7 +26,6 @@ _Completed by Architect after Feature Lead HANDOFF. All items must pass before m
 | Stack | Command |
 |-------|---------|
 | Next.js | `npm run build` |
-| Angular | `ng build --configuration development` |
 | Python | `python -m py_compile <files>` or build step |
 | Go | `go build ./...` |
 | Rust | `cargo build` |
@@ -56,7 +54,6 @@ _Completed by Architect after Feature Lead HANDOFF. All items must pass before m
 | Stack | Command |
 |-------|---------|
 | Next.js / React | `npm test` or `npx vitest run` |
-| Angular | `ng test --run-once` |
 | Python | `pytest` |
 | Go | `go test ./...` |
 | Rust | `cargo test` |
@@ -84,13 +81,14 @@ Run against changed files (`git diff --name-only main...HEAD`):
 | Type-safety bypasses | `grep -rn '@ts-ignore\|@ts-expect-error\|# type: ignore\|#nosec\|nolint' <changed-files>` | No new instances |
 
 <!--
-### SOC2 / Enterprise Guardrails (Optional)
+### Enterprise / Compliance Guardrails (Optional)
 
-Uncomment this section for projects with SOC2, BAA, or enterprise compliance requirements.
+Uncomment this section for projects with regulatory, contractual, or enterprise
+compliance requirements (adapt the sensitive-field list to your domain).
 
-- [ ] **Supply chain:** Container base images are from approved sources (e.g. Chainguard). No ad-hoc bases.
-- [ ] **No PII/PHI in logs, traces, or error messages:**
-  `grep -rn 'patient_name\|ssn\|mrn\|date_of_birth\|social_security' --include='*.ts' --include='*.py' --include='*.go' <changed-files> | grep -iv 'test\|mock\|type\|interface\|schema'`
+- [ ] **Supply chain:** Container base images are from approved sources. No ad-hoc bases.
+- [ ] **No sensitive personal data in logs, traces, or error messages:**
+  `grep -rn 'ssn\|date_of_birth\|social_security\|<your-domain-specific-fields>' --include='*.ts' --include='*.py' --include='*.go' <changed-files> | grep -iv 'test\|mock\|type\|interface\|schema'`
 - [ ] **Observability preserved:** Structured logs include request/transaction IDs. Health check endpoints exist and verify downstream reachability.
 - [ ] **Config externalized:** All environment-specific values come from env vars or approved secret managers. No hardcoded URLs, ports, or connection strings.
 - [ ] **Deployability:** Startup runs idempotent DB migrations. Fails fast on migration failure. Downgrades possible without destroying state.

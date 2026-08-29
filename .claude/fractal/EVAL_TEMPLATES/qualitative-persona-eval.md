@@ -21,30 +21,33 @@ Run AFTER the Architect marks the workstream COMPLETE (Layers 1–2 passed). The
 
 | Persona | Role / Segment | Evaluation Focus |
 |---------|----------------|------------------|
-| **Engineering Lead** | Technical buyer, evaluating tools for their team | Keyboard efficiency, customizability, data export, self-hosting ease |
-| **Individual Contributor** | Day-to-day user managing their tasks | Speed, clarity, reduced friction, "does this feel faster than what I use now?" |
-| **Demo Observer** | Stakeholder watching a product demo | Visual polish, wow factor, "does this look professional and intentional?" |
+| **Self-Hoster Admin** | Deploys and maintains the instance, no vendor support | Deployment/upgrade friction, resource footprint, backup/restore |
+| **Keyboard Power-User** | Daily user who never reaches for the mouse | Keystroke coverage, focus handling, completing a flow keyboard-only |
+| **Team Lead** | Manages a team's board, onboards new members | Cross-member visibility, board configuration, member onboarding |
 
-### Engineering Lead — Evaluation Questions
+### Self-Hoster Admin — Evaluation Questions
 
-1. Would this feature convince an engineering lead to adopt TaskFlow over Linear/Jira for their team?
-2. Can the user discover this feature without reading documentation?
-3. Is the keyboard workflow complete — can the user accomplish the task without a mouse?
-4. Does the data model support future extensibility (custom fields, integrations)?
-5. Would the engineering lead trust this with production team data?
+1. Can this be deployed and upgraded via the documented self-host path (e.g. Docker Compose) with no undocumented manual steps?
+2. Does this keep the resource footprint predictable, or does it pull in a new required service or dependency?
+3. Is any new data covered by the existing backup/restore process, or does it introduce a store that isn't backed up?
+4. Are migrations safe to run against existing self-hosted data — no silent data loss on upgrade?
+5. Would the admin trust this in a small-team production deployment with no vendor support to fall back on?
 
-### Individual Contributor — Evaluation Questions
+### Keyboard Power-User — Evaluation Questions
 
-1. Does this feature reduce friction compared to the user's current tool?
-2. Is the interaction latency imperceptible (< 100ms)?
-3. Is the visual hierarchy clear — does the user immediately know what to do?
-4. Can the user undo a mistake easily?
+1. Is every action reachable by keyboard shortcut, with no action gated behind a mouse-only affordance?
+2. Does focus move predictably — logical tab order, no focus trap outside an intentional modal?
+3. Can the full flow (open → act → confirm/close) be completed start to finish without touching the mouse?
+4. Is the keyboard shortcut discoverable (hint, command-palette entry) rather than something the user has to already know?
+5. Does the interaction feel instant — no perceptible lag between keypress and UI update?
 
-### Demo Observer — Evaluation Questions
+### Team Lead — Evaluation Questions
 
-1. Does the feature look polished and intentional (not like a prototype)?
-2. Does the animation/transition quality match modern SaaS products?
-3. Would this create a "wow" moment in a 5-minute demo?
+1. Can the team lead see cross-member workload or status at a glance, or does the feature only surface one person's view?
+2. Can the team lead configure the board (columns, labels, permissions) to match the team's process without engineering help?
+3. Does onboarding a new member into this feature require more than an invite plus default access?
+4. Is data correctly scoped to the team lead's own team, with no leakage from or to other teams?
+5. Would the team lead trust this enough to roll out to the whole team without a pilot caveat?
 
 ## Scoring
 
@@ -60,31 +63,34 @@ Run AFTER the Architect marks the workstream COMPLETE (Layers 1–2 passed). The
 ## Qualitative Persona Evaluation — [Workstream Name]
 
 **Date:** YYYY-MM-DD
-**Personas evaluated:** Engineering Lead, Individual Contributor, Demo Observer
+**Personas evaluated:** Self-Hoster Admin, Keyboard Power-User, Team Lead
 
-### Engineering Lead
+### Self-Hoster Admin
 | # | Question | Score | Notes |
 |---|----------|-------|-------|
-| 1 | Adopt over Linear/Jira? | Pass/Partial/Fail | ... |
-| 2 | Discoverable without docs? | Pass/Partial/Fail | ... |
-| 3 | Keyboard workflow complete? | Pass/Partial/Fail | ... |
-| 4 | Extensible data model? | Pass/Partial/Fail | ... |
-| 5 | Trust with production data? | Pass/Partial/Fail | ... |
+| 1 | Deployable/upgradable via documented path? | Pass/Partial/Fail | ... |
+| 2 | Resource footprint stays predictable? | Pass/Partial/Fail | ... |
+| 3 | Covered by backup/restore? | Pass/Partial/Fail | ... |
+| 4 | Migrations safe on existing data? | Pass/Partial/Fail | ... |
+| 5 | Trusted without vendor support? | Pass/Partial/Fail | ... |
 
-### Individual Contributor
+### Keyboard Power-User
 | # | Question | Score | Notes |
 |---|----------|-------|-------|
-| 1 | Reduces friction? | Pass/Partial/Fail | ... |
-| 2 | Latency < 100ms? | Pass/Partial/Fail | ... |
-| 3 | Visual hierarchy clear? | Pass/Partial/Fail | ... |
-| 4 | Undo available? | Pass/Partial/Fail | ... |
+| 1 | Every action keyboard-reachable? | Pass/Partial/Fail | ... |
+| 2 | Focus handling predictable? | Pass/Partial/Fail | ... |
+| 3 | Full flow completable keyboard-only? | Pass/Partial/Fail | ... |
+| 4 | Shortcut discoverable? | Pass/Partial/Fail | ... |
+| 5 | Interaction feels instant? | Pass/Partial/Fail | ... |
 
-### Demo Observer
+### Team Lead
 | # | Question | Score | Notes |
 |---|----------|-------|-------|
-| 1 | Polished and intentional? | Pass/Partial/Fail | ... |
-| 2 | Animation quality? | Pass/Partial/Fail | ... |
-| 3 | "Wow" moment? | Pass/Partial/Fail | ... |
+| 1 | Cross-member visibility? | Pass/Partial/Fail | ... |
+| 2 | Board configurable without engineering? | Pass/Partial/Fail | ... |
+| 3 | Onboarding a new member is simple? | Pass/Partial/Fail | ... |
+| 4 | Data scoped correctly to team? | Pass/Partial/Fail | ... |
+| 5 | Trusted for full team rollout? | Pass/Partial/Fail | ... |
 
 ### Overall Result
 - **Result:** PASS / CONDITIONAL PASS / FAIL

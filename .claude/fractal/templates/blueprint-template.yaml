@@ -1,0 +1,63 @@
+# BLUEPRINT Template — FRACTAL Phase Plan
+#
+# Filename convention: BLUEPRINT-{Scope}-{ShortName}.yaml
+#   Scope examples: M1, M2, Discovery, Hardening
+#   ShortName: kebab or PascalCase, describe the phase theme
+#
+# Location: .claude/fractal/
+# Router reads one active blueprint at a time (see router.py --blueprint / BLUEPRINT_PATH).
+
+name: {Phase-Name}                          # Machine key; no spaces; matches filename stem
+title: "{Phase N} — {Human-readable title}"
+date: YYYY-MM-DD
+status: DRAFT                               # DRAFT | ACTIVE | COMPLETE | ARCHIVED
+
+revised: |
+  YYYY-MM-DD — {INITIALS}. One-line reason for revision.
+
+trigger: |
+  What event / prior phase completion caused this BLUEPRINT to exist.
+  One short paragraph.
+
+context: |
+  Source documents:
+    - path/to/spec-or-adr.md
+
+  Locked decisions:
+    - {decision reference}: one-line summary
+
+  Pending (does NOT block this phase):
+    - {decision reference}: one-line summary
+
+workstreams:
+  - id: {short-id, e.g. M1.1}
+    name: {PascalCaseName}
+    prd: .claude/fractal/workstreams/{kebab-name}.md
+    model: sonnet                           # sonnet (most features), opus (strategic), haiku (atomic)
+    owner: Feature Lead ({initials or role})
+    description: |
+      Two or three sentences. What ships, which file surface, why this is a
+      separate workstream. Keep it compact — the PRD expands this.
+    depends_on: []                          # [] or [{other-id}, {other-id}]
+    acceptance:
+      - "CI gate passes (<project build/lint/test commands — define per repo>)"
+      - "TaskFlow example: npm run build && npm run lint && npm run test:run"
+      - {Concrete outcome 1}
+      - {Concrete outcome 2}
+
+  - id: {short-id, e.g. M1.2}
+    name: {PascalCaseName}
+    prd: .claude/fractal/workstreams/{kebab-name}.md
+    model: sonnet
+    owner: Feature Lead ({initials or role})
+    description: |
+      …
+    depends_on: [{previous-id}]
+    acceptance:
+      - …
+
+parallel: false                             # true if workstreams with empty depends_on can run concurrently
+notes: |
+  Execution order notes (who runs in parallel, which gate must pass first).
+  Model tier justification (why opus vs sonnet for this phase).
+  Post-phase follow-ups — what the next BLUEPRINT will pick up.
