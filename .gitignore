@@ -10,6 +10,7 @@ __pycache__/
 
 # FRACTAL runtime (local only — do not commit)
 .claude/fractal/.state.json
+.claude/fractal/events.jsonl
 .claude/settings.local.json
 
 # Next.js

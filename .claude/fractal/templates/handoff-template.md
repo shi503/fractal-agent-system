@@ -56,6 +56,8 @@ Evidence the CI gate passed. This HANDOFF is invalid if any primary gate fails.
 
 Adapt to the workstream scope (frontend-only, backend-only, docs-only). At minimum the primary build command must PASS. See `.claude/fractal/templates/prd-template.md` §4 for the CI gate this workstream committed to.
 
+**Evidence Bundle (optional):** `{path/to/workstream-dir}/evidence/` — built with `tools/contracts/scripts/build-evidence.cjs`, validates against `tools/contracts/schemas/evidence.schema.json`. Omit if this workstream did not produce one.
+
 ## 6. Verification for Reviewer
 
 How the Architect (or a human reviewer) can confirm the claims above without re-running the whole workstream.

@@ -53,6 +53,27 @@ Gotchas section.
 (`fixtures/taskflow/blueprints/BLUEPRINT-NOVA-P1-NotificationCore.yaml`); pass
 `--blueprint <path>` to target a different blueprint.
 
+## Event + evidence call pattern
+
+Two wrappers around the router CLI — never edits to `router.py` itself — close the
+observability loop:
+
+- `node tools/contracts/scripts/emit-event.cjs --workstream-id <id> --router-status <status> --log .claude/fractal/events.jsonl` —
+  call once alongside every `router.py update <workstream> <status>`, same status value.
+  Appends one schema-valid line to the gitignored `events.jsonl` (JSON Lines,
+  `tools/contracts/schemas/event.schema.json`). `--router-status` maps
+  `NOT_STARTED|IN_PROGRESS|COMPLETE` to the matching event type; pass `--type`/`--status`
+  directly for a mid-flight event (e.g. `fractal.work.blocked`).
+- `node tools/contracts/scripts/build-evidence.cjs --workstream-id <id> --out <workstream-dir>/evidence --item kind=...,subject=...,uri=...,result=...` —
+  run once a workstream is COMPLETE, before the HANDOFF. Writes one evidence-item file per
+  `--item` into the output dir, each validating against
+  `tools/contracts/schemas/evidence.schema.json`. Point the HANDOFF's Evidence Bundle line at
+  that directory.
+
+Gate both with `node tools/contracts/scripts/validate-contracts.cjs <dir>` — it reads any
+directory of `$schemaRef`-tagged JSON files. See `tools/contracts/scripts/e2e-demo.sh` for a
+full replayed lifecycle.
+
 ## HANDOFF requirements
 
 Every Feature Lead `HANDOFF.md` includes: summary of work completed (file paths, function
