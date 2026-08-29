@@ -1,0 +1,51 @@
+# FIXTURE — synthetic blueprint for the TaskFlow NOVA initiative.
+#
+# Shape: OLD PHASED SHAPE — a top-level YAML *list* of phases, each carrying a
+# `workstreams:` list whose rows use the legacy `feature_lead:` and `dependencies:`
+# keys. This is the backward-compatibility fixture: it must load under the original
+# router (which indexes `phase["workstreams"][n]["feature_lead"]` directly) AND
+# normalize cleanly under the newer dual-shape parser.
+#
+# Do not "modernize" this file into the flat shape — that is the whole point of it.
+
+- name: Phase-1-LoadTesting
+  title: "NOVA Phase 3.1 — Load Testing"
+  status: ACTIVE
+  workstreams:
+    - feature_lead: FeatureLead-LoadTestHarness
+      id: WS-7
+      name: LoadTestHarness
+      prd: workstreams/load-test-harness/prd-load-test-harness.md
+      model: opus
+      owner: Feature Lead (CL)
+      description: |
+        Build the repeatable load harness that drives the notification channel and
+        the vault sync channel at the self-host ceiling, and publish the numbers the
+        GA gate is measured against.
+      dependencies: []
+      acceptance:
+        - Harness reproduces a 500-subscriber board run from a single command
+        - Published run report records p50/p95/p99 per channel and peak resident memory
+        - Harness fails the run when a threshold in the gate table is breached
+
+- name: Phase-2-Accessibility
+  title: "NOVA Phase 3.2 — Accessibility"
+  status: NOT_STARTED
+  workstreams:
+    - feature_lead: FeatureLead-A11yAudit
+      id: WS-8
+      name: A11yAudit
+      prd: workstreams/a11y-audit/prd-a11y-audit.md
+      model: haiku
+      owner: Feature Lead (SP)
+      description: |
+        Audit every surface NOVA added — the notification toast stack, the preference
+        center, and the merge review queue — against WCAG 2.2 AA, and file the findings
+        with a reproduction path per issue. Runs after the load harness so the audit
+        covers the surfaces under realistic data volume.
+      dependencies:
+        - FeatureLead-LoadTestHarness
+      acceptance:
+        - Every NOVA surface has an axe run recorded with zero critical violations
+        - Screen-reader pass documented for the merge review queue
+        - Each finding lists a reproduction path and an owning workstream

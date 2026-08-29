@@ -1,0 +1,79 @@
+# FIXTURE — synthetic blueprint for the TaskFlow NOVA initiative.
+# Shape: FLAT (single top-level mapping with a `workstreams:` list).
+# Exercises: flat-shape parsing + `depends_on` edge resolution by `id`.
+
+name: NOVA-P1-NotificationCore
+title: "NOVA Phase 1 — Notification Core"
+date: 2026-08-06
+status: ACTIVE
+
+revised: |
+  2026-08-06 — AR. Initial phase plan after the notification options whiteboard converged on WebSocket fanout.
+
+trigger: |
+  D-0001 locked WebSocket fanout as the notification transport. Phase 1 exists to land the
+  notification data model, the fanout service, and the user-facing preference center before
+  the offline vault work (Phase 2) starts consuming notification events.
+
+context: |
+  Source documents:
+    - wiki/sources/notification-architecture-options.md
+    - wiki/sources/notification-user-research.md
+    - wiki/synthesis/notification-fatigue-principles.md
+
+  Locked decisions:
+    - D-0001: WebSocket fanout chosen over SSE and long-polling.
+    - D-0002: Notification preference defaults ship as opt-in digests.
+
+  Pending (does NOT block this phase):
+    - D-0004: Load-test gate before GA.
+
+workstreams:
+  - id: WS-1
+    name: NotificationSchema
+    prd: workstreams/notification-schema/prd-notification-schema.md
+    model: opus
+    owner: Feature Lead (RV)
+    description: |
+      Land the notification data model: the Notification and NotificationDelivery
+      tables, the category enum, and the idempotency key contract every producer
+      must use. Every other NOVA workstream reads this schema, so it ships first.
+    depends_on: []
+    acceptance:
+      - Prisma migration applies cleanly and `npx prisma generate` succeeds
+      - Notification category enum covers all six product categories with a documented default
+      - Idempotency key format documented and enforced by a unit test
+
+  - id: WS-2
+    name: EventFanout
+    prd: workstreams/event-fanout/prd-event-fanout.md
+    model: sonnet
+    owner: Feature Lead (RV)
+    description: |
+      Build the fanout service that turns a domain event into per-subscriber
+      notification rows and pushes them over the WebSocket channel. Includes the
+      backpressure policy and the reconnect replay window.
+    depends_on: [WS-1]
+    acceptance:
+      - Fanout emits exactly one delivery row per eligible subscriber per event
+      - Reconnect replays the last 200 undelivered events without duplicates
+      - Integration test covers the backpressure drop path
+
+  - id: WS-3
+    name: PreferenceCenter
+    prd: workstreams/preference-center/prd-preference-center.md
+    model: sonnet
+    owner: Feature Lead (SP)
+    description: |
+      Ship the per-user preference surface: category toggles, digest cadence, and
+      quiet hours. Reads the schema from WS-1 and writes through a Server Action.
+    depends_on: [WS-1]
+    acceptance:
+      - Preference writes round-trip through a Zod-validated Server Action
+      - Defaults render for a user with no stored preference row
+      - Keyboard navigation covers every toggle with a visible focus ring
+
+parallel: true
+notes: |
+  WS-2 and WS-3 run concurrently once WS-1 is COMPLETE. WS-1 is opus tier because the
+  schema shape is load-bearing for both later phases; the rest are sonnet.

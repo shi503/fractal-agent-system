@@ -1,0 +1,79 @@
+# FIXTURE — synthetic blueprint for the TaskFlow NOVA initiative.
+# Shape: FLAT (single top-level mapping with a `workstreams:` list).
+# Exercises: the multi-edge dependency case (WS-6 depends on both WS-4 and WS-5).
+
+name: NOVA-P2-OfflineVault
+title: "NOVA Phase 2 — Offline Vault"
+date: 2026-08-18
+status: ACTIVE
+
+revised: |
+  2026-08-18 — AR. Phase opened after D-0003 locked the CRDT approach for vault sync.
+
+trigger: |
+  Phase 1 delivered the notification core. Phase 2 adds the offline vault: a local
+  write-ahead store, a sync protocol, and the UX for the cases the merge cannot decide
+  on its own.
+
+context: |
+  Source documents:
+    - wiki/sources/offline-sync-approaches.md
+    - wiki/sources/selfhost-resource-envelope.md
+    - wiki/synthesis/nova-architecture-synthesis.md
+
+  Locked decisions:
+    - D-0003: mergeloom CRDT library adopted for vault sync.
+    - D-0001: WebSocket fanout is the transport the sync channel piggybacks on.
+
+  Pending (does NOT block this phase):
+    - D-0004: Load-test gate before GA.
+
+workstreams:
+  - id: WS-4
+    name: VaultStorageLayer
+    prd: workstreams/vault-storage-layer/prd-vault-storage-layer.md
+    model: opus
+    owner: Feature Lead (RV)
+    description: |
+      Implement the browser-side vault: an IndexedDB-backed write-ahead log with a
+      bounded quota, a replay cursor, and a deterministic eviction policy tuned for
+      the self-host memory envelope.
+    depends_on: []
+    acceptance:
+      - Vault survives a hard reload with zero lost writes in the replay test
+      - Quota eviction is deterministic and covered by a unit test
+      - Peak heap stays inside the documented self-host envelope
+
+  - id: WS-5
+    name: SyncProtocol
+    prd: workstreams/sync-protocol/prd-sync-protocol.md
+    model: sonnet
+    owner: Feature Lead (RV)
+    description: |
+      Define and implement the vault sync wire protocol: op batching, causal
+      ordering via the mergeloom clock, and the resume handshake after a network gap.
+    depends_on: [WS-4]
+    acceptance:
+      - Two clients converge to an identical board state after an interleaved edit run
+      - Resume handshake recovers from a 30-minute network gap without a full resync
+      - Protocol version negotiation rejects an unknown major version
+
+  - id: WS-6
+    name: ConflictResolutionUX
+    prd: workstreams/conflict-resolution-ux/prd-conflict-resolution-ux.md
+    model: sonnet
+    owner: Feature Lead (SP)
+    description: |
+      The human-facing half of sync: surface the small set of merges the CRDT cannot
+      settle silently, and give the user a keyboard-first way to pick a winner. Depends
+      on both the vault storage layer and the sync protocol.
+    depends_on: [WS-4, WS-5]
+    acceptance:
+      - Unsettled merges surface in a review queue with both candidate versions
+      - Picking a winner writes a single op through the sync protocol
+      - Queue is fully operable from the keyboard with no pointer fallback
+
+parallel: false
+notes: |
+  WS-6 is the multi-edge case: it cannot start until WS-4 and WS-5 are both COMPLETE.
+  WS-4 is opus tier because the eviction policy is the hardest correctness surface in NOVA.

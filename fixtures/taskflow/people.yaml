@@ -1,0 +1,73 @@
+# TaskFlow Fixture — People Registry (SYNTHETIC)
+#
+# Every person in this file is fictional. The registry exists so that RACI
+# fields in fixtures/taskflow/decision-log/*.md resolve during validator runs.
+# Emails use the RFC 2606 reserved domain `taskflow.example` and are not routable.
+#
+# Shape mirrors the Decision Ledger v2 people registry: initials -> {name, role,
+# email, default_raci, domains}. Initials are the canonical identifier used in
+# every RACI field and in the `created_by` / `updated_by` audit fields.
+
+meta:
+  version: "1.0.0"
+  updated: "2026-08-20"
+  tenant: "taskflow"
+  synthetic: true
+  description: >
+    Synthetic people registry for the TaskFlow NOVA fixture corpus.
+    Fictional persons only — see fixtures/taskflow/README.md.
+
+people:
+  AR:
+    name: "Alex Rivera"
+    role: "Tech Lead / Architect"
+    email: "alex.rivera@taskflow.example"
+    allocation: "100%"
+    default_raci: "A"
+    domains:
+      - L2   # Product
+      - L4   # Technical
+    notes: "Accountable owner for NOVA architecture decisions."
+
+  RV:
+    name: "Rowan Vance"
+    role: "Backend Engineer"
+    email: "rowan.vance@taskflow.example"
+    allocation: "100%"
+    default_raci: "R"
+    domains:
+      - L4   # Technical
+    notes: "Responsible for the notification fanout service and the offline vault storage layer."
+
+  SP:
+    name: "Sam Park"
+    role: "Frontend Engineer"
+    email: "sam.park@taskflow.example"
+    allocation: "100%"
+    default_raci: "R"
+    domains:
+      - L4   # Technical (FE)
+      - L5   # Design/UX
+    notes: "Responsible for the preference center and the conflict-resolution UX surface."
+
+  TN:
+    name: "Toni Nguyen"
+    role: "Product"
+    email: "toni.nguyen@taskflow.example"
+    allocation: "60%"
+    default_raci: "C"
+    domains:
+      - L2   # Product
+      - L5   # Design/UX
+    notes: "Consulted on product scope; owns the NOVA user-research thread."
+
+  CL:
+    name: "Casey Lume"
+    role: "SRE / Infrastructure"
+    email: "casey.lume@taskflow.example"
+    allocation: "50%"
+    default_raci: "C"
+    domains:
+      - L3   # Delivery
+      - L4   # Technical (infra)
+    notes: "Consulted and informed on self-host resource envelopes and load-test gates."
