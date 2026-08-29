@@ -1,0 +1,15 @@
+{
+  "$schemaRef": "capability",
+  "schema_version": "1.0.0",
+  "capability_id": "cap:edit-isolated-repository",
+  "version": "1.0.0",
+  "name": "Edit an isolated repository worktree",
+  "description": "Read and edit declared paths and run declared deterministic checks without external effects.",
+  "kind": "edit",
+  "owner": "role:nova-platform-owner",
+  "provider": "sys:fractal-control",
+  "maximum_risk_tier": "R1",
+  "side_effects": true,
+  "requires_approval": false,
+  "tags": ["repository", "isolated", "reversible"]
+}

@@ -1,0 +1,35 @@
+{
+  "$schemaRef": "evidence",
+  "schema_version": "1.0.0",
+  "evidence_id": "evidence:nova-ws1-test-01",
+  "job_id": "job:nova-notification-schema",
+  "workstream_id": "workstream:ws-1-notification-schema",
+  "kind": "test",
+  "producer": {
+    "principal_id": "service:test-runner",
+    "principal_type": "service",
+    "display_name": "Deterministic test runner"
+  },
+  "generated_at": "2026-08-20T18:02:30Z",
+  "subject": "notify service test suite",
+  "uri": "https://example.invalid/evidence/nova-ws1-test-01",
+  "content_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "result": "pass",
+  "independent": true,
+  "redaction": {
+    "classification": "internal",
+    "content_in_trace": false,
+    "redactions_applied": []
+  },
+  "provenance": {
+    "activity_id": "activity:run-notify-tests",
+    "used": [
+      {
+        "id": "repo:taskflow",
+        "version": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4",
+        "uri": "https://example.invalid/repos/taskflow"
+      }
+    ],
+    "derived_from": []
+  }
+}

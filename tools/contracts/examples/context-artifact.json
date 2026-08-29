@@ -1,0 +1,25 @@
+{
+  "$schemaRef": "context-artifact",
+  "schema_version": "1.0.0",
+  "context_id": "ctx:nova-notification-conventions",
+  "version": "2026-08-20.1",
+  "title": "NOVA Notification Conventions",
+  "kind": "domain",
+  "uri": "https://example.invalid/context/nova-notification-conventions",
+  "owner": "role:nova-platform-owner",
+  "classification": "internal",
+  "created_at": "2026-08-20T18:00:00Z",
+  "valid_from": "2026-08-20T18:00:00Z",
+  "review_by": "2026-09-20T18:00:00Z",
+  "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "permitted_principals": ["agent:feature-lead", "person:AR"],
+  "provenance": {
+    "generated_by": {
+      "principal_id": "person:AR",
+      "principal_type": "human",
+      "display_name": "NOVA tech lead"
+    },
+    "derived_from": [],
+    "activity_id": "activity:author-context"
+  }
+}

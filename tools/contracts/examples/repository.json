@@ -1,0 +1,18 @@
+{
+  "$schemaRef": "repository",
+  "schema_version": "1.0.0",
+  "repository_id": "repo:taskflow",
+  "name": "TaskFlow",
+  "uri": "https://example.invalid/repos/taskflow",
+  "default_branch": "main",
+  "owners": ["role:nova-platform-owner"],
+  "classification": "internal",
+  "domains": ["notifications", "offline-vault"],
+  "interfaces": [
+    { "name": "notification-fanout-api", "kind": "api", "path": "POST /v1/notifications" }
+  ],
+  "checks": {
+    "build": "npm run build",
+    "test": "npm test"
+  }
+}

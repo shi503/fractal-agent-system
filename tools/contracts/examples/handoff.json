@@ -1,0 +1,35 @@
+{
+  "$schemaRef": "handoff",
+  "schema_version": "1.0.0",
+  "handoff_id": "handoff:nova-ws1-01",
+  "job_id": "job:nova-notification-schema",
+  "workstream_id": "workstream:ws-1-notification-schema",
+  "contract_version": "1.0.0",
+  "status": "accepted",
+  "produced_by": {
+    "principal_id": "agent:feature-lead",
+    "principal_type": "agent",
+    "display_name": "FRACTAL Feature Lead",
+    "runtime": "fixture"
+  },
+  "evaluated_by": {
+    "principal_id": "service:test-runner",
+    "principal_type": "service",
+    "display_name": "Deterministic test runner"
+  },
+  "created_at": "2026-08-20T18:03:00Z",
+  "summary": "Fixture handoff demonstrating the portable contract; it is not evidence of a live model run.",
+  "checks": [
+    {
+      "name": "notify service test suite",
+      "result": "pass",
+      "evidence_id": "evidence:nova-ws1-test-01"
+    }
+  ],
+  "evidence_refs": ["evidence:nova-ws1-test-01"],
+  "limitations": [
+    "Fixture data only",
+    "Policy enforcement is outside this schema validation example"
+  ],
+  "next_actions": ["Instrument the dispatcher to emit this structure"]
+}

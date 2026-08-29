@@ -1,0 +1,34 @@
+{
+  "$schemaRef": "work-contract",
+  "schema_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "job_id": "job:nova-notification-schema",
+  "workstream_id": "workstream:ws-1-notification-schema",
+  "title": "Land the NOVA notification data model",
+  "requested_by": {
+    "principal_id": "person:AR",
+    "principal_type": "human",
+    "display_name": "NOVA tech lead"
+  },
+  "risk_tier": "R1",
+  "scope": [
+    {
+      "repository_id": "repo:taskflow",
+      "access": "write",
+      "paths": ["services/notify/**"]
+    }
+  ],
+  "context": [],
+  "capabilities": ["cap:edit-isolated-repository"],
+  "acceptance": [
+    {
+      "criterion_id": "criterion:schema-and-tests-pass",
+      "description": "The notification schema migration applies cleanly and the service test suite passes.",
+      "evidence_kinds": ["test"]
+    }
+  ],
+  "constraints": {
+    "external_effects_allowed": false
+  },
+  "dependencies": []
+}

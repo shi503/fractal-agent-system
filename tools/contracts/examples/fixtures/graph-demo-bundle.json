@@ -1,0 +1,229 @@
+{
+  "repository": {
+    "schema_version": "1.0.0",
+    "repository_id": "repo:taskflow",
+    "name": "TaskFlow",
+    "uri": "https://example.invalid/repos/taskflow",
+    "default_branch": "main",
+    "owners": ["role:nova-platform-owner"],
+    "classification": "internal",
+    "domains": ["notifications", "offline-vault"],
+    "interfaces": [
+      { "name": "notification-fanout-api", "kind": "api", "path": "POST /v1/notifications" }
+    ],
+    "checks": {
+      "build": "npm run build",
+      "test": "npm test"
+    }
+  },
+  "contextArtifact": {
+    "schema_version": "1.0.0",
+    "context_id": "ctx:nova-notification-conventions",
+    "version": "2026-08-20.1",
+    "title": "NOVA Notification Conventions",
+    "kind": "domain",
+    "uri": "https://example.invalid/context/nova-notification-conventions",
+    "owner": "role:nova-platform-owner",
+    "classification": "internal",
+    "created_at": "2026-08-20T18:00:00Z",
+    "valid_from": "2026-08-20T18:00:00Z",
+    "review_by": "2026-09-20T18:00:00Z",
+    "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "permitted_principals": ["agent:feature-lead", "person:AR"],
+    "provenance": {
+      "generated_by": {
+        "principal_id": "person:AR",
+        "principal_type": "human",
+        "display_name": "NOVA tech lead"
+      },
+      "derived_from": [],
+      "activity_id": "activity:author-context"
+    }
+  },
+  "capability": {
+    "schema_version": "1.0.0",
+    "capability_id": "cap:edit-isolated-repository",
+    "version": "1.0.0",
+    "name": "Edit an isolated repository worktree",
+    "description": "Read and edit declared paths and run declared deterministic checks without external effects.",
+    "kind": "edit",
+    "owner": "role:nova-platform-owner",
+    "provider": "sys:fractal-control",
+    "maximum_risk_tier": "R1",
+    "side_effects": true,
+    "requires_approval": false,
+    "tags": ["repository", "isolated", "reversible"]
+  },
+  "workContract": {
+    "schema_version": "1.0.0",
+    "contract_version": "1.0.0",
+    "job_id": "job:nova-notification-schema",
+    "workstream_id": "workstream:ws-1-notification-schema",
+    "title": "Land the NOVA notification data model",
+    "outcome": "The Notification and NotificationDelivery tables, category enum, and idempotency key contract are merged and pass the repository's deterministic checks.",
+    "requested_by": {
+      "principal_id": "person:AR",
+      "principal_type": "human",
+      "display_name": "NOVA tech lead"
+    },
+    "assigned_to": {
+      "principal_id": "agent:feature-lead",
+      "principal_type": "agent",
+      "display_name": "FRACTAL Feature Lead",
+      "runtime": "claude-code",
+      "runtime_version": "pinned-at-run",
+      "delegated_by": "person:AR"
+    },
+    "risk_tier": "R1",
+    "scope": [
+      {
+        "repository_id": "repo:taskflow",
+        "access": "write",
+        "paths": ["services/notify/**", "services/notify/test/**"]
+      }
+    ],
+    "context": [
+      {
+        "id": "ctx:nova-notification-conventions",
+        "version": "2026-08-20.1",
+        "uri": "https://example.invalid/context/nova-notification-conventions",
+        "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    ],
+    "capabilities": ["cap:edit-isolated-repository"],
+    "acceptance": [
+      {
+        "criterion_id": "criterion:schema-and-tests-pass",
+        "description": "The notification schema migration applies cleanly and the service test suite passes.",
+        "evidence_kinds": ["test", "typecheck"]
+      }
+    ],
+    "constraints": {
+      "external_effects_allowed": false,
+      "max_cost_usd": 2,
+      "deadline": "2026-08-22T00:00:00Z",
+      "max_retries": 1
+    },
+    "dependencies": [],
+    "non_goals": ["Push a branch", "Deploy the service", "Use production data"]
+  },
+  "events": [
+    {
+      "specversion": "1.0",
+      "id": "event:nova-ws1-accepted",
+      "source": "/fractal/control",
+      "type": "fractal.work.accepted",
+      "time": "2026-08-20T18:01:00Z",
+      "subject": "workstream:ws-1-notification-schema",
+      "datacontenttype": "application/json",
+      "dataschema": "https://fractal.local/schemas/event.schema.json",
+      "data": {
+        "schema_version": "1.0.0",
+        "job_id": "job:nova-notification-schema",
+        "workstream_id": "workstream:ws-1-notification-schema",
+        "trace_id": "trace:nova-ws1-run1",
+        "actor": {
+          "principal_id": "service:fractal-dispatch",
+          "principal_type": "service",
+          "display_name": "FRACTAL dispatcher"
+        },
+        "status": "accepted",
+        "message": "Contract validated and accepted."
+      }
+    },
+    {
+      "specversion": "1.0",
+      "id": "event:nova-ws1-completed",
+      "source": "/fractal/control",
+      "type": "fractal.work.completed",
+      "time": "2026-08-20T18:03:00Z",
+      "subject": "workstream:ws-1-notification-schema",
+      "datacontenttype": "application/json",
+      "dataschema": "https://fractal.local/schemas/event.schema.json",
+      "data": {
+        "schema_version": "1.0.0",
+        "job_id": "job:nova-notification-schema",
+        "workstream_id": "workstream:ws-1-notification-schema",
+        "trace_id": "trace:nova-ws1-run1",
+        "parent_event_id": "event:nova-ws1-accepted",
+        "actor": {
+          "principal_id": "service:fractal-dispatch",
+          "principal_type": "service",
+          "display_name": "FRACTAL dispatcher"
+        },
+        "status": "completed",
+        "duration_ms": 120000,
+        "cost_usd": 0,
+        "evidence_refs": ["evidence:nova-ws1-test-01"]
+      }
+    }
+  ],
+  "evidence": {
+    "schema_version": "1.0.0",
+    "evidence_id": "evidence:nova-ws1-test-01",
+    "job_id": "job:nova-notification-schema",
+    "workstream_id": "workstream:ws-1-notification-schema",
+    "kind": "test",
+    "producer": {
+      "principal_id": "service:test-runner",
+      "principal_type": "service",
+      "display_name": "Deterministic test runner"
+    },
+    "generated_at": "2026-08-20T18:02:30Z",
+    "subject": "notify service test suite",
+    "uri": "https://example.invalid/evidence/nova-ws1-test-01",
+    "content_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "result": "pass",
+    "independent": true,
+    "redaction": {
+      "classification": "internal",
+      "content_in_trace": false,
+      "redactions_applied": []
+    },
+    "provenance": {
+      "activity_id": "activity:run-notify-tests",
+      "used": [
+        {
+          "id": "repo:taskflow",
+          "version": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4",
+          "uri": "https://example.invalid/repos/taskflow"
+        }
+      ],
+      "derived_from": []
+    }
+  },
+  "handoff": {
+    "schema_version": "1.0.0",
+    "handoff_id": "handoff:nova-ws1-01",
+    "job_id": "job:nova-notification-schema",
+    "workstream_id": "workstream:ws-1-notification-schema",
+    "contract_version": "1.0.0",
+    "status": "accepted",
+    "produced_by": {
+      "principal_id": "agent:feature-lead",
+      "principal_type": "agent",
+      "display_name": "FRACTAL Feature Lead",
+      "runtime": "fixture"
+    },
+    "evaluated_by": {
+      "principal_id": "service:test-runner",
+      "principal_type": "service",
+      "display_name": "Deterministic test runner"
+    },
+    "created_at": "2026-08-20T18:03:00Z",
+    "summary": "Fixture handoff demonstrating the portable contract; it is not evidence of a live model run.",
+    "checks": [
+      {
+        "name": "notify service test suite",
+        "result": "pass",
+        "evidence_id": "evidence:nova-ws1-test-01"
+      }
+    ],
+    "evidence_refs": ["evidence:nova-ws1-test-01"],
+    "limitations": [
+      "Fixture data only",
+      "Policy enforcement is outside this schema validation example"
+    ],
+    "next_actions": ["Instrument the dispatcher to emit this structure"]
+  }
+}

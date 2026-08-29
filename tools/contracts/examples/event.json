@@ -1,0 +1,24 @@
+{
+  "$schemaRef": "event",
+  "specversion": "1.0",
+  "id": "event:nova-ws1-accepted",
+  "source": "/fractal/control",
+  "type": "fractal.work.accepted",
+  "time": "2026-08-20T18:01:00Z",
+  "subject": "workstream:ws-1-notification-schema",
+  "datacontenttype": "application/json",
+  "dataschema": "https://fractal.local/schemas/event.schema.json",
+  "data": {
+    "schema_version": "1.0.0",
+    "job_id": "job:nova-notification-schema",
+    "workstream_id": "workstream:ws-1-notification-schema",
+    "trace_id": "trace:nova-ws1-run1",
+    "actor": {
+      "principal_id": "service:fractal-dispatch",
+      "principal_type": "service",
+      "display_name": "FRACTAL dispatcher"
+    },
+    "status": "accepted",
+    "message": "Contract validated and accepted."
+  }
+}

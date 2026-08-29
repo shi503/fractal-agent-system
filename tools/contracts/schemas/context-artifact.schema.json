@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fractal.local/schemas/context-artifact.schema.json",
+  "title": "Context Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "context_id",
+    "version",
+    "title",
+    "kind",
+    "uri",
+    "owner",
+    "classification",
+    "created_at",
+    "review_by",
+    "content_hash",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/definitions/version" },
+    "context_id": { "$ref": "common.schema.json#/definitions/id" },
+    "version": { "$ref": "common.schema.json#/definitions/version" },
+    "title": { "type": "string", "minLength": 1 },
+    "kind": {
+      "type": "string",
+      "enum": ["organization", "domain", "repository", "job", "evidence", "memory"]
+    },
+    "uri": { "type": "string", "format": "uri-reference" },
+    "owner": { "$ref": "common.schema.json#/definitions/id" },
+    "classification": { "$ref": "common.schema.json#/definitions/classification" },
+    "created_at": { "$ref": "common.schema.json#/definitions/timestamp" },
+    "valid_from": { "$ref": "common.schema.json#/definitions/timestamp" },
+    "expires_at": { "$ref": "common.schema.json#/definitions/timestamp" },
+    "review_by": { "$ref": "common.schema.json#/definitions/timestamp" },
+    "content_hash": { "$ref": "common.schema.json#/definitions/sha256" },
+    "permitted_principals": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/definitions/id" }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["generated_by"],
+      "properties": {
+        "generated_by": { "$ref": "common.schema.json#/definitions/principal" },
+        "derived_from": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/definitions/resource_ref" }
+        },
+        "activity_id": { "$ref": "common.schema.json#/definitions/id" }
+      }
+    }
+  }
+}

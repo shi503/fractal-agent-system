@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fractal.local/schemas/capability.schema.json",
+  "title": "Capability Declaration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "capability_id",
+    "version",
+    "name",
+    "description",
+    "kind",
+    "owner",
+    "provider",
+    "maximum_risk_tier"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/definitions/version" },
+    "capability_id": { "$ref": "common.schema.json#/definitions/id" },
+    "version": { "$ref": "common.schema.json#/definitions/version" },
+    "name": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "kind": {
+      "type": "string",
+      "enum": ["read", "plan", "edit", "evaluate", "communicate", "deploy", "govern"]
+    },
+    "owner": { "$ref": "common.schema.json#/definitions/id" },
+    "provider": { "$ref": "common.schema.json#/definitions/id" },
+    "maximum_risk_tier": { "$ref": "common.schema.json#/definitions/risk_tier" },
+    "input_schema": { "type": "string", "format": "uri-reference" },
+    "output_schema": { "type": "string", "format": "uri-reference" },
+    "side_effects": { "type": "boolean" },
+    "requires_approval": { "type": "boolean" },
+    "tags": { "type": "array", "uniqueItems": true, "items": { "type": "string" } }
+  }
+}

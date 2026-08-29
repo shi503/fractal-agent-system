@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://fractal.local/schemas/evidence.schema.json",
+  "title": "Evidence Item",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "job_id",
+    "workstream_id",
+    "kind",
+    "producer",
+    "generated_at",
+    "subject",
+    "uri",
+    "content_hash",
+    "result",
+    "redaction",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/definitions/version" },
+    "evidence_id": { "$ref": "common.schema.json#/definitions/id" },
+    "job_id": { "$ref": "common.schema.json#/definitions/id" },
+    "workstream_id": { "$ref": "common.schema.json#/definitions/id" },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "diff",
+        "build",
+        "lint",
+        "typecheck",
+        "test",
+        "policy_decision",
+        "approval",
+        "effect_receipt",
+        "evaluation",
+        "recovery",
+        "other"
+      ]
+    },
+    "producer": { "$ref": "common.schema.json#/definitions/principal" },
+    "generated_at": { "$ref": "common.schema.json#/definitions/timestamp" },
+    "subject": { "type": "string", "minLength": 1 },
+    "uri": { "type": "string", "format": "uri-reference" },
+    "content_hash": { "$ref": "common.schema.json#/definitions/sha256" },
+    "result": { "type": "string", "enum": ["pass", "fail", "informational"] },
+    "independent": { "type": "boolean" },
+    "redaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "content_in_trace"],
+      "properties": {
+        "classification": { "$ref": "common.schema.json#/definitions/classification" },
+        "content_in_trace": { "type": "boolean" },
+        "redactions_applied": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["activity_id"],
+      "properties": {
+        "activity_id": { "$ref": "common.schema.json#/definitions/id" },
+        "used": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/definitions/resource_ref" }
+        },
+        "derived_from": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/definitions/id" }
+        }
+      }
+    }
+  }
+}

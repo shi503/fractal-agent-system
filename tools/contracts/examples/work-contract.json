@@ -1,0 +1,54 @@
+{
+  "$schemaRef": "work-contract",
+  "schema_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "job_id": "job:nova-notification-schema",
+  "workstream_id": "workstream:ws-1-notification-schema",
+  "title": "Land the NOVA notification data model",
+  "outcome": "The Notification and NotificationDelivery tables, category enum, and idempotency key contract are merged and pass the repository's deterministic checks.",
+  "requested_by": {
+    "principal_id": "person:AR",
+    "principal_type": "human",
+    "display_name": "NOVA tech lead"
+  },
+  "assigned_to": {
+    "principal_id": "agent:feature-lead",
+    "principal_type": "agent",
+    "display_name": "FRACTAL Feature Lead",
+    "runtime": "claude-code",
+    "runtime_version": "pinned-at-run",
+    "delegated_by": "person:AR"
+  },
+  "risk_tier": "R1",
+  "scope": [
+    {
+      "repository_id": "repo:taskflow",
+      "access": "write",
+      "paths": ["services/notify/**", "services/notify/test/**"]
+    }
+  ],
+  "context": [
+    {
+      "id": "ctx:nova-notification-conventions",
+      "version": "2026-08-20.1",
+      "uri": "https://example.invalid/context/nova-notification-conventions",
+      "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "capabilities": ["cap:edit-isolated-repository"],
+  "acceptance": [
+    {
+      "criterion_id": "criterion:schema-and-tests-pass",
+      "description": "The notification schema migration applies cleanly and the service test suite passes.",
+      "evidence_kinds": ["test", "typecheck"]
+    }
+  ],
+  "constraints": {
+    "external_effects_allowed": false,
+    "max_cost_usd": 2,
+    "deadline": "2026-08-22T00:00:00Z",
+    "max_retries": 1
+  },
+  "dependencies": [],
+  "non_goals": ["Push a branch", "Deploy the service", "Use production data"]
+}
