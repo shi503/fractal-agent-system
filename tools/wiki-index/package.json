@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "@tobilu/qmd": "^2.5.3",
+    "npm": "^11.16.0"
+  },
+  "trustedDependencies": [
+    "better-sqlite3",
+    "node-llama-cpp",
+    "tree-sitter-go",
+    "tree-sitter-javascript",
+    "tree-sitter-python",
+    "tree-sitter-rust",
+    "tree-sitter-typescript"
+  ]
+}

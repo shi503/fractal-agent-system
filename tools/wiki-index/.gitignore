@@ -1,0 +1,9 @@
+# Vendored dependencies (reproducible from package.json + bun.lock — do not commit)
+node_modules/
+
+# SQLite WAL/SHM side files — transient, created by any read/write connection.
+# The committed artifact is taskflow.sqlite itself (checkpointed by
+# refresh-bm25-index.sh before it moves the file into place).
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
