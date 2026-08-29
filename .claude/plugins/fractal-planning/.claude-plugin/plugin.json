@@ -1,0 +1,8 @@
+{
+  "name": "fractal-planning",
+  "version": "2.0.0",
+  "description": "Planning and coordination tools for FRACTAL Architects and Strategists — stakeholder briefs, initiative interviews, meeting digests.",
+  "author": {
+    "name": "FRACTAL Multi-Agent System contributors"
+  }
+}

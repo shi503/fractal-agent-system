@@ -1,6 +1,6 @@
 ---
 name: fractal-init
-description: "Bootstrap a FRACTAL epic session — verify router.py, initialize state, display ready workstreams"
+description: "Bootstrap a FRACTAL epic session — verify router.py, initialize state, and display ready workstreams. Use when the user asks to start an epic, kick off a blueprint, or initialize FRACTAL for a new session."
 argument-hint: "[blueprint filename, e.g. BLUEPRINT-MyEpic.yaml]"
 disable-model-invocation: true
 ---
@@ -47,3 +47,8 @@ You are bootstrapping a new FRACTAL epic session. The argument is the blueprint 
    python3 .claude/fractal/router.py update <FeatureLeadName> COMPLETE
    python3 .claude/fractal/router.py next
    ```
+
+## Gotchas
+
+- `router.py init` resets ALL workstream states to `NOT_STARTED` — never run it on a blueprint that already has in-flight or completed workstreams. It is a bootstrap-only command.
+- The argument is a bare filename inside `.claude/fractal/`, not a path — passing a full path will fail the existence check in Step 1.

@@ -1,5 +1,6 @@
 ---
-description: "Run a structured gap analysis at a milestone boundary. Evaluates current state against external benchmarks, internal parity targets, compliance gates, and demo readiness. Produces a prioritized gap inventory with effort estimates and blocking dependencies."
+name: gap-analysis
+description: "Run a structured gap analysis at a milestone boundary. Audits current state against external benchmarks, internal parity, design conformance, and readiness — producing a prioritized gap inventory with effort estimates and blocking dependencies. Use when the user asks to run a gap analysis, evaluate milestone readiness, or check how far a phase is from done."
 user-invocable: true
 ---
 

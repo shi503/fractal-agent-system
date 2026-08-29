@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: "Generate HANDOFF.md for a completed Feature Lead workstream, run the eval gate, and update router state"
+description: "Generate HANDOFF.md for a completed Feature Lead workstream, run the eval gate, and update router state. Use when the user asks to hand off a workstream, close out a Feature Lead session, or mark a workstream complete."
 argument-hint: "[FeatureLead name, e.g. FeatureLead-PreferencesUI]"
 disable-model-invocation: true
 ---
@@ -15,13 +15,23 @@ When the Feature Lead runs as a background agent, they use the bash steps in `fe
 
 ## Steps
 
-### Step 1: Run Deterministic Eval Gate
+### Step 1: Run Quality Pass
+
+Before the eval gate, run `/quality-pass` to catch AI slop introduced during implementation:
+
+```bash
+git diff HEAD
+```
+
+Review output for: excessive comments, unsafe type casts, missing error handling conventions, hardcoded config, `console.log`/`print()` left in, files over 300 lines. Fix what you find. Record the result in the Verification Evidence table.
+
+### Step 2: Run Deterministic Eval Gate
 
 Run your project's build and typecheck commands. Examples (customize for your stack):
 
-- **Frontend only:** `npm run build` or `ng build --configuration development` — then `npx tsc --noEmit` if applicable
-- **Backend only:** `cd server && npx tsc --noEmit` or your backend's typecheck/build command
-- **Full stack:** Run both frontend and backend checks
+- **Frontend only:** the project's build command — then a standalone typecheck pass if the language supports one
+- **Backend only:** the project's build/typecheck command
+- **Full stack:** run both frontend and backend checks
 
 ```bash
 # Example (replace with your project's commands):
@@ -29,9 +39,9 @@ Run your project's build and typecheck commands. Examples (customize for your st
 # npx tsc --noEmit 2>&1 | tail -20
 ```
 
-**If build fails:** Stop. Report the errors. Fix them. Re-run. Do not proceed to Step 2 until the build is clean.
+**If build fails:** Stop. Report the errors. Fix them. Re-run. Do not proceed to Step 3 until the build is clean.
 
-### Step 2: Generate HANDOFF.md
+### Step 3: Generate HANDOFF.md
 
 Determine the output path from the FeatureLead name:
 - `FeatureLead-PreferencesUI` → `.claude/fractal/workstreams/preferences-ui/HANDOFF.md`
@@ -48,7 +58,6 @@ Write the HANDOFF.md with this structure:
 ## Summary of Work Completed
 
 - [Specific outcomes: file paths, function names, line numbers where relevant]
-- [E.g. "Created src/app/components/portal/account/notifications/notifications.ts — 180 lines, OnPush, per-category toggle grid"]
 
 ## Summary of Work Not Completed
 
@@ -69,21 +78,21 @@ Write the HANDOFF.md with this structure:
 
 | Gate | Command | Result | Notes |
 |------|---------|--------|-------|
-| Lint | `[project lint command]` | PASS / FAIL | |
+| Quality pass | `/quality-pass` | PASS / SKIP | [slop items removed, if any] |
 | Build | `[project build command]` | PASS / FAIL | |
 | Typecheck | `[project typecheck command]` | PASS / FAIL / N/A | |
+| Backend build/typecheck | `[project backend command]` | PASS / FAIL / N/A | |
 | Tests | `[project test command]` | PASS (X/Y) / FAIL / N/A | [new specs added, if any] |
-| Quality pass | `/quality-pass` | PASS / SKIP | [slop items removed, if any] |
-<!-- | Compliance scan | `[scan commands]` | PASS / FAIL | Enable for regulated projects | -->
+| Secrets scan | `grep -rn 'password\|api_key\|token'` | PASS / FAIL | |
 ```
 
-### Step 3: Update Router State
+### Step 4: Update Router State
 
 ```bash
 python3 .claude/fractal/router.py update <FeatureLeadName> COMPLETE
 ```
 
-### Step 4: Display Next Ready Workstreams
+### Step 5: Display Next Ready Workstreams
 
 ```bash
 python3 .claude/fractal/router.py next
@@ -91,6 +100,11 @@ python3 .claude/fractal/router.py next
 
 Print the output. If all workstreams are COMPLETE, print: "Epic complete — review all HANDOFF.md files before closing."
 
-### Step 5: Remind
+### Step 6: Remind
 
 "Review `.claude/fractal/workstreams/<name>/HANDOFF.md` before accepting. Verify all acceptance criteria are checked off before marking the epic phase complete."
+
+## Gotchas
+
+- The build gate is a hard stop — never write the HANDOFF or run Step 4 if Step 2 fails. A HANDOFF with a failing gate is worse than no HANDOFF.
+- Router `update ... COMPLETE` is idempotent per workstream but does not itself validate the HANDOFF content — that review is the Architect's job, not this skill's.

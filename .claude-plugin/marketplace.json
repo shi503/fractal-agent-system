@@ -1,0 +1,48 @@
+{
+  "name": "fractal-marketplace",
+  "owner": {
+    "name": "FRACTAL Multi-Agent System contributors"
+  },
+  "metadata": {
+    "description": "FRACTAL multi-tier agent orchestration plugin marketplace. Local checkout distribution.",
+    "version": "2.0.0"
+  },
+  "plugins": [
+    {
+      "name": "fractal-core",
+      "source": "./.claude/plugins/fractal-core",
+      "description": "The FRACTAL orchestration loop itself — epic bootstrap, release maintenance, PULSE heartbeats, HANDOFF generation, quality pass, gap analysis, CLAUDE.md audit, and commit summarization. Install target: every repo adopting FRACTAL.",
+      "version": "2.0.0"
+    },
+    {
+      "name": "fractal-planning",
+      "source": "./.claude/plugins/fractal-planning",
+      "description": "Planning and coordination tools for FRACTAL Architects and Strategists — stakeholder briefs, initiative interviews, meeting digests. Install target: repos where a human or agent Architect authors BLUEPRINTs.",
+      "version": "2.0.0"
+    },
+    {
+      "name": "fractal-tools",
+      "source": "./.claude/plugins/fractal-tools",
+      "description": "General-purpose developer tools for repos running FRACTAL — commit, review, issue, and exploration helpers. Install target: every repo.",
+      "version": "2.0.0"
+    },
+    {
+      "name": "fractal-wiki",
+      "source": "./.claude/plugins/fractal-wiki",
+      "description": "Wiki and knowledge-substrate skills for FRACTAL repos — ingest, query with citations, and lint a project's markdown knowledge base. Install target: repos with a wiki/ substrate.",
+      "version": "2.0.0"
+    },
+    {
+      "name": "fractal-runner",
+      "source": "./.claude/plugins/fractal-runner",
+      "description": "Installs and operates the FRACTAL scheduled runner, driving unattended workstream execution across local, VM, and manual environments. Install target: repos running the scheduled FRACTAL runner.",
+      "version": "2.0.0"
+    },
+    {
+      "name": "fractal-pr-review",
+      "source": "./.claude/plugins/fractal-pr-review",
+      "description": "PR-review assistance for FRACTAL repos — gathers a PR's diff and CI state, runs bundled reviewers, and triages findings into a severity-ranked table. Install target: repos with active PR flow.",
+      "version": "2.0.0"
+    }
+  ]
+}

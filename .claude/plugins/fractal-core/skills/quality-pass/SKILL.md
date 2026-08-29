@@ -1,6 +1,6 @@
 ---
 name: quality-pass
-description: "Review recent changes for AI slop and code quality issues. Run after implementation, before handoff."
+description: "Review recent changes for AI slop and code quality issues. Run after implementation, before handoff. Use when the user asks to clean up a diff, run a quality pass, or check for AI slop before committing."
 argument-hint: "[optional: file or directory scope]"
 disable-model-invocation: true
 allowed-tools:
@@ -82,7 +82,7 @@ Uncomment this section for projects with SOC2, BAA, or enterprise compliance req
 These checks run as part of the quality pass and are reported in the output.
 
 ### Additional Safety Rules
-- Supply chain: Containers must use approved base images (e.g. Chainguard). No ad-hoc bases.
+- Supply chain: Containers must use approved base images. No ad-hoc bases.
 - Observability: Emit structured logs with request/transaction ID propagation; provide
   deep health checks (downstream reachability) and /metrics endpoints.
 - Deployability: Startup must run idempotent DB migrations; fail fast if migrations fail.
@@ -98,11 +98,11 @@ grep -rn 'password\|secret\|api_key\|token\|credential\|connection_string' \
   $(git diff --name-only main...HEAD) 2>/dev/null | \
   grep -iv 'test\|mock\|example\|\.env\.example\|type\|interface' || echo "PASS: No secrets detected"
 
-# PII/PHI scan — no sensitive identifiers in logs or output
-grep -rn 'patient_name\|ssn\|mrn\|date_of_birth\|social_security' \
+# Sensitive identifier scan — no PII/sensitive identifiers in logs or output
+grep -rn 'ssn\|date_of_birth\|social_security' \
   --include='*.ts' --include='*.py' --include='*.go' \
   $(git diff --name-only main...HEAD) 2>/dev/null | \
-  grep -iv 'test\|mock\|type\|interface\|schema' || echo "PASS: No PII/PHI detected"
+  grep -iv 'test\|mock\|type\|interface\|schema' || echo "PASS: No sensitive identifiers detected"
 
 # Hardcoded config scan — no environment-specific values
 grep -rn 'localhost:\|127\.0\.0\.1\|0\.0\.0\.0' \
@@ -112,7 +112,7 @@ grep -rn 'localhost:\|127\.0\.0\.1\|0\.0\.0\.0' \
 ```
 
 ### Enterprise Guardrails Checklist
-- [ ] No sensitive data (credentials, PHI/PII, document contents) in logs, traces, errors, or metrics
+- [ ] No sensitive data (credentials, PII, document contents) in logs, traces, errors, or metrics
 - [ ] All environment-specific config comes from env vars or approved secret managers
 - [ ] Structured logs use ISO 8601 timestamps and include: ts, level, service, request_id, msg
 - [ ] No hidden/implicit dependencies between services

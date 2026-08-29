@@ -1,6 +1,6 @@
 ---
 name: pulse
-description: "Emit a structured heartbeat from the current Feature Lead session and check for escalation"
+description: "Emit a structured heartbeat from the current Feature Lead session and check for escalation. Use when the user asks to send a pulse, emit a heartbeat, or check in on a long-running Feature Lead session."
 argument-hint: "[FeatureLead name, e.g. FeatureLead-PreferencesUI]"
 disable-model-invocation: true
 ---
@@ -45,3 +45,8 @@ When the Feature Lead runs as a background agent, they use the bash steps in `fe
 5. **If HEARTBEAT_ALERT:** Surface the escalation immediately. Stop work. Report the blocker to the user for Architect review.
 
 6. **If HEARTBEAT_OK:** Print a one-line status summary and continue working.
+
+## Gotchas
+
+- PULSE.md files are gitignored by convention — `fractal-maintenance`'s layout lint fails if one is accidentally tracked.
+- `escalation_needed: true` should only fire when work genuinely cannot continue without external input, not for routine status updates.

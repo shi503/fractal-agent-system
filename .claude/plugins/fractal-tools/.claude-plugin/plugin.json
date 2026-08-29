@@ -1,0 +1,8 @@
+{
+  "name": "fractal-tools",
+  "version": "2.0.0",
+  "description": "General-purpose developer tools for repos running FRACTAL — commit, review, issue, and exploration helpers.",
+  "author": {
+    "name": "FRACTAL Multi-Agent System contributors"
+  }
+}

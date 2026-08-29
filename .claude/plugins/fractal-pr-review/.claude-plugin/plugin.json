@@ -1,0 +1,8 @@
+{
+  "name": "fractal-pr-review",
+  "version": "2.0.0",
+  "description": "PR-review assistance for FRACTAL repos — gathers a PR's diff and CI state, runs bundled reviewers, and triages findings into a severity-ranked table.",
+  "author": {
+    "name": "FRACTAL Multi-Agent System contributors"
+  }
+}

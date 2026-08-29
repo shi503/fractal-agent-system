@@ -1,5 +1,6 @@
 ---
-description: "Audits a CLAUDE.md file against the FRACTAL / Claude Code rubric and emits a scored report with prioritized, concrete improvement suggestions. Does not auto-apply edits. Re-runnable after each CLAUDE.md change."
+name: claude-md-audit
+description: "Audits a CLAUDE.md file against the FRACTAL / Claude Code rubric and emits a scored report with prioritized, concrete improvement suggestions. Does not auto-apply edits. Re-runnable after each CLAUDE.md change. Use when the user asks to audit, score, or review a CLAUDE.md file."
 user-invocable: true
 ---
 
@@ -9,8 +10,8 @@ You are auditing a `CLAUDE.md` file — the always-on context anchor for an agen
 
 ## Context Files (Read First, in order)
 
-1. [`docs/claude-md-rubric.md`](../../../docs/claude-md-rubric.md) — the **authoritative scoring rubric**. Read it in full. Your output must score every dimension it defines.
-2. [`docs/research-claude-code-harness.md`](../../../docs/research-claude-code-harness.md) §3 (CLAUDE.md conventions), §10 (output discipline), §12 (Verification Agent) — the reasoning behind why each dimension matters. Cite when justifying a low score.
+1. [`docs/claude-md-rubric.md`](../../../../../docs/claude-md-rubric.md) — the **authoritative scoring rubric**. Read it in full. Your output must score every dimension it defines.
+2. [`docs/research-claude-code-harness.md`](../../../../../docs/research-claude-code-harness.md) §3 (CLAUDE.md conventions), §10 (output discipline), §12 (Verification Agent) — the reasoning behind why each dimension matters. Cite when justifying a low score.
 3. The target CLAUDE.md itself (default: `.claude/CLAUDE.md` at the repo root).
 
 Do not proceed without reading the rubric. If it is missing, halt and report "rubric not found."
@@ -56,7 +57,7 @@ For each of the 3 targets:
 
 - **Before:** the exact current state (quote or "not present").
 - **After:** a full proposed replacement. No hand-waving — this should be copy-paste-ready.
-- **Why:** one sentence tying back to a rubric anchor AND a leak-research section.
+- **Why:** one sentence tying back to a rubric anchor AND a harness-research section.
 
 Do not auto-apply the edits. Leave them in the audit report for the user / Architect to accept.
 
@@ -114,7 +115,7 @@ Write to `docs/claude-md-audits/{YYYY-MM-DD}-{project}.md`. Create the directory
 (copy-paste-ready replacement)
 ```
 
-**Why:** {rubric anchor + leak-research reference}
+**Why:** {rubric anchor + harness-research reference}
 
 ### 2. Dimension N — {name}
 (same structure)
@@ -145,7 +146,7 @@ Nothing else. The audit file is the deliverable.
 
 ## Output Discipline
 
-Per the leak's A/B finding (§10 of `research-claude-code-harness.md`):
+Per `research-claude-code-harness.md` §10:
 - Keep chat responses ≤100 words; intermediate status ≤25 words.
 - No opening affirmations ("Great audit target!").
 - No trailing summary of what the skill just did.

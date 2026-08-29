@@ -1,0 +1,8 @@
+{
+  "name": "fractal-runner",
+  "version": "2.0.0",
+  "description": "Installs and operates the FRACTAL scheduled runner, driving unattended workstream execution across local, VM, and manual environments.",
+  "author": {
+    "name": "FRACTAL Multi-Agent System contributors"
+  }
+}

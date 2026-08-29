@@ -1,0 +1,8 @@
+{
+  "name": "fractal-wiki",
+  "version": "2.0.0",
+  "description": "Wiki and knowledge-substrate skills for FRACTAL repos — ingest, query with citations, and lint a project's markdown knowledge base.",
+  "author": {
+    "name": "FRACTAL Multi-Agent System contributors"
+  }
+}
