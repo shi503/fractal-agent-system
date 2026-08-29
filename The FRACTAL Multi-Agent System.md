@@ -90,7 +90,8 @@ graph TB
 ## Getting Started
 ```bash
 # 1. Copy into your project as .claude
-cp -r fractal-agent-system/example-claude /path/to/your-project/.claude
+/plugin marketplace add path/to/fractal-agent-system
+/plugin install fractal-core@fractal-marketplace
 
 # 2. Verify PyYAML
 python3 -c "import yaml; print('ok')"

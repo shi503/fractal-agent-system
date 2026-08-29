@@ -21,9 +21,9 @@
 **Target users:**
 - Engineering teams wanting a self-hosted Linear alternative with keyboard-first UX
 - AI agent workflows that need a shared task queue visible to humans and agents alike
-- Small product teams that find Jira too heavy and Trello too simple
+- Small product teams that find heavyweight enterprise trackers too heavy and Trello too simple
 
-**Strategic Position:** "The Linear for self-hosters" — not a Jira clone, not a Trello clone. Speed and keyboard navigation are non-negotiable differentiators.
+**Strategic Position:** "The Linear for self-hosters" — not a heavyweight-tracker clone, not a Trello clone. Speed and keyboard navigation are non-negotiable differentiators.
 
 ---
 
@@ -143,8 +143,8 @@ prisma/
 
 | Need | Pattern |
 |------|---------|
-| Database query / data fetch | RSC (async component, direct Prisma query via `lib/queries/`) |
-| Mutation (create/update/delete) | RSC form → Server Action in `lib/actions/` |
+| Database query / data fetch | RSC (async component, direct Prisma query via lib/queries/) |
+| Mutation (create/update/delete) | RSC form → Server Action in lib/actions/ |
 | Interactivity with React state | `"use client"` + `useState`/`useReducer` |
 | Drag-and-drop board state | `"use client"` + Zustand `useBoardStore()` |
 | Real-time subscription | `"use client"` + Supabase realtime client |
@@ -329,7 +329,7 @@ Full guidance: docs/soc2-compliance.md
 
 ## Git Conventions
 
-- **Branch naming:** `feat/short-description`, `fix/short-description`, `chore/short-description`
+- **Branch naming:** feat/short-description, fix/short-description, chore/short-description
 - **Commit messages:** Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`)
 - **Never commit with a failing build:** `npm run build && npx tsc --noEmit` must pass
 - **No `.env` files in git:** Maintain `.env.example` with placeholder values
@@ -339,19 +339,48 @@ Full guidance: docs/soc2-compliance.md
 
 ## FRACTAL Integration
 
-This project uses the [FRACTAL multi-agent system](https://github.com/shi503/fractal-agent-system) for orchestrating large feature epics.
+This project uses the [FRACTAL multi-agent system](https://github.com/shi503/fractal-agent-system) for orchestrating large feature epics — and this repo *is* that system, dogfooding itself against this TaskFlow demo.
 
 **For agents reading this CLAUDE.md:**
 - This file is your primary context. Read it before starting any session.
-- Guide files in `.SPECS/guides/` provide deep-dive patterns — reference by path, don't paste inline.
-- The Strategist doc at `.claude/FRACTAL/STRATEGIST-taskflow.md` encodes the project intent and failure modes.
+- Guide files in `docs/` provide deep-dive patterns — reference by path, don't paste inline.
+- The Strategist doc at `.claude/fractal/STRATEGIST-taskflow.md` encodes the project intent and failure modes.
 - The Architect decomposes epics into workstreams. Feature Leads execute single workstreams.
 - Never mark a workstream COMPLETE without a passing build.
 
 **Key documentation:**
-- `.SPECS/guides/frontend-dev-guide.md` — Deep-dive RSC, shadcn/ui, Server Action patterns
-- `.SPECS/guides/testing-patterns.md` — Vitest, RTL, and Playwright patterns
-- `.SPECS/guides/platform-strategy.md` — Architecture phases and decision principles
-- `.SPECS/guides/soc2-compliance.md` — Enterprise and compliance guardrails
-- `.claude/FRACTAL/BLUEPRINT-*.yaml` — Active epic dependency graph
-- `.claude/FRACTAL/workstreams/*.md` — Per-workstream PRDs
+- `docs/frontend-dev-guide.md` — Deep-dive RSC, shadcn/ui, Server Action patterns
+- `docs/testing-patterns.md` — Vitest, RTL, and Playwright patterns
+- `docs/platform-strategy.md` — Architecture phases and decision principles
+- `docs/soc2-compliance.md` — Enterprise and compliance guardrails
+- `.claude/fractal/BLUEPRINT-*.yaml` — Active epic dependency graph
+- `.claude/fractal/workstreams/*.md` — Per-workstream PRDs
+
+## Plugins
+
+The four tier agents and every operational skill ship as six Claude Code plugins under
+`.claude/plugins/`, registered in `.claude-plugin/marketplace.json` and gated by
+`tools/validate-plugins.sh`. `fractal-core` (agents + `fractal-init`/`pulse`/`handoff`/
+`gap-analysis`/`quality-pass`/`claude-md-audit`/`commit-summarize`/`fractal-maintenance`) is
+the one every session needs; `fractal-tools`, `fractal-planning`, `fractal-wiki`,
+`fractal-runner`, and `fractal-pr-review` add role-specific skills. See the README's
+capability tour for the full breakdown, and `.claude/rules/plugin-authoring.md` before adding
+or editing a skill.
+
+## Rules surface
+
+`.claude/rules/` holds seven path-scoped rule files that auto-load when a session touches a
+matching path — `fractal-protocol.md` (`.claude/fractal/**`, `ROUTING_LOGIC/**`),
+`plugin-authoring.md` (`.claude/plugins/**`), `decision-ledger.md`
+(`tools/decision-ledger/**`, `fixtures/taskflow/decision-log/**`), `wiki-conventions.md` and
+`memory-vs-wiki.md` (the wiki substrate), `fixture-naming.md` (`fixtures/taskflow/**`), and
+`markdown-authoring.md` (every `.md` file). This CLAUDE.md is the always-on anchor; the rules
+are the on-demand layer for those specific paths — nothing here should contradict them.
+`tools/check-rules.sh` gates their frontmatter shape and every path they cite.
+
+## Fixture corpus
+
+`fixtures/taskflow/` is the synthetic NOVA-initiative corpus (blueprints, workstream PRDs,
+HANDOFFs, wiki docs, decision entries) that every subsystem above is exercised against — see
+`docs/fixtures-and-e2e.md` for the inventory and the end-to-end run. Everything in it is
+fictional (see that directory's own README); do not cite it as evidence about a real project.

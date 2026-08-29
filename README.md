@@ -7,43 +7,42 @@
 ## Install (Claude Code) — 2 minutes
 
 ```bash
-# 1. Clone the repo (or download)
+# 1. Clone the repo
 git clone https://github.com/shi503/fractal-agent-system.git
-
-# 2. Copy into your project as .claude
-cp -r ./example-claude ./.claude
-
-# (optional). Copy your project's context docs into .claude/fractal/intake/ (see examples)
-cp -r ./docs/frontend-dev-guide.md ./.claude/fractal/intake/
-cp -r ./docs/platform-strategy.md ./.claude/fractal/intake/
-cp -r ./docs/soc2-compliance.md ./.claude/fractal/intake/
-cp -r ./docs/testing-patterns.md ./.claude/fractal/intake/
-
-# 3. File setup done. Open Claude Code in your project, run the strategist init
-new prompt:  "you are @.claude/agents/strategist.md let's run the interview and setup our project"
-# Answer the questions and guide the agent as you see fit!
-# After, you can ask about what you two came up with. 
-
-# 4. Install your project (if you haven't already).  And verify PyYAML
-# new project (that requires project dependencies setup) 
-new prompt: "You are the @.claude/agents/architect.md get an understanding of the project and notice that we haven't setup our project for runtime.  Let's setup our project dependencies and get an understanding of @.claude/fractal/FRACTALSYSTEM-taskflow.md and let's get started on project planning."
-# Verify python is working
-python3 -c "import yaml; print('ok')"
-# existing project (just kick off the architect)
-new prompt: "You are the @.claude/agents/architect.md get an understanding of the project and we'll use @.claude/fractal/FRACTALSYSTEM-taskflow.md to get started on project planning."
-
-
-# 5. Invoke the Architect and plan your Phases and PRDs
-
+cd fractal-agent-system
 ```
 
-No file edits required before first use. The sample `CLAUDE.md`, agents, skills, and eval templates are pre-filled with a realistic demo project (TaskFlow kanban tracker). Customize later.
+```
+# 2. Add this checkout as a plugin marketplace, then install the plugins you need
+/plugin marketplace add .
+/plugin install fractal-core@fractal-marketplace
+```
+
+`fractal-core` is the minimum — it ships the four tier agents (Architect, Strategist, Feature
+Lead, Sub-Agent) and the operational skills (`fractal-init`, `pulse`, `handoff`,
+`gap-analysis`, `quality-pass`, `commit-summarize`, `claude-md-audit`,
+`fractal-maintenance`). Add the others as your role needs them — see the capability tour
+below for what each one carries.
+
+```
+# 3. Verify: exercises the router end-to-end against the bundled fixture, no side effects
+```
+```bash
+bash tools/router-smoke.sh
+```
+
+No file edits required for that verification — it runs against `fixtures/taskflow/` in a
+throwaway state directory and never touches this repo's own `.claude/fractal/.state.json`.
+
+**Wiring FRACTAL into your own project** (not this repo) is a second step after plugin
+install: your project needs its own `.claude/fractal/router.py`, workstreams directory, and
+BLUEPRINT. See [SETUP-CLAUDE-CODE.md](SETUP-CLAUDE-CODE.md) for the full walkthrough.
 
 ---
 
 ## First Run
 
-After installing, open Claude Code in your project and type these exact prompts:
+Once `fractal-core` is installed, open Claude Code and type these prompts:
 
 **1. Strategist interview** (run once per project):
 ```
@@ -80,7 +79,7 @@ python3 .claude/fractal/router.py status
 4. **`router.py next`** returns workstreams whose dependencies are all `COMPLETE`
 5. **Feature Lead** sessions execute one workstream each — clean context, file manifest, acceptance criteria
 6. **Pulse** emits a JSON heartbeat; `router.py pulse` checks for escalation without LLM
-7. **Handoff** runs the build gate, generates `HANDOFF.md`, marks the workstream `COMPLETE`
+7. **Handoff** runs the CI gate, generates `HANDOFF.md`, marks the workstream `COMPLETE`
 8. **Architect** evaluates HANDOFF artifacts; repeat until all workstreams complete
 
 ## Core Principles
@@ -129,50 +128,68 @@ graph TB
 
 ---
 
+## 2.0 Capability Tour
+
+Everything below ships in this checkout and is exercised against the bundled `fixtures/taskflow/` corpus — clone it and every command in this section runs as-is.
+
+### Plugins
+
+Six plugins, each pinned at `2.0.0`, registered in `.claude-plugin/marketplace.json`. `tools/validate-plugins.sh` gates the manifest, every `plugin.json`, and every `SKILL.md`'s frontmatter.
+
+| Plugin | Install target | Ships |
+|---|---|---|
+| `fractal-core` | Every repo adopting FRACTAL | 8 skills (`fractal-init`, `fractal-maintenance`, `pulse`, `handoff`, `gap-analysis`, `quality-pass`, `claude-md-audit`, `commit-summarize`) + the 4 tier agents |
+| `fractal-planning` | Repos where an Architect/Strategist authors BLUEPRINTs | 11 skills — stakeholder briefs, initiative interviews, meeting digests, sprint close, weekly digest, decision-ledger interview |
+| `fractal-tools` | Every repo | 8 skills — explore, review, create-issue, create-plan, document, deslop, peer-review, fractal-setup |
+| `fractal-wiki` | Repos with a markdown wiki substrate | 8 skills — ingest, query-with-citations, lint, add, explore, sync, transcript-ingest, promote-to-ledger |
+| `fractal-runner` | Repos running the scheduled FRACTAL runner | 1 skill, operating the tool described below |
+| `fractal-pr-review` | Repos with active PR flow | 1 skill (`pr-assist`) — reviews a PR and compounds recurring findings into `standards/pr-review-guides/` |
+
+### Decision ledger
+
+`tools/decision-ledger/` — a markdown-canonical decision log with a SQLite-derived index, schema-driven validation, and a multi-user safety layer (locking, conflict preservation, audit trail). Every entry is a plain `.md` file with YAML frontmatter; the index is a disposable acceleration structure, never the source of truth. `python3 -m pytest tools/decision-ledger -q` runs its test suite.
+
+### Wiki + committed lexical index
+
+A four-tier markdown knowledge substrate (raw capture → source distillation → cross-cutting synthesis → entity stubs, OKF v0.2 frontmatter) operated by the `fractal-wiki` plugin, with a risk-based review queue that quarantines LLM edits likely to shrink, overwrite, or drop provenance from an existing page. Retrieval defaults to a committed, lexical-only (BM25) index — `tools/wiki-index/taskflow.sqlite`, 328 KB, sub-second queries, no model load — with an opt-in semantic path for a capable local host. See `docs/wiki-conventions.md`.
+
+### Scheduled runner
+
+`tools/scheduled-fractal-runner/` — a deterministic engine that, on a schedule, reviews open PRs in a locked-down sandbox and writes machine-verified HANDOFF evidence for in-progress workstreams. Structurally complete with its own tests; not yet wired to the `fractal-runner` plugin skill. `bash tools/scheduled-fractal-runner/tests/test-allowlist-safety.sh` and `--mode plan` are read-only ways to see it work.
+
+### Rules surface
+
+`.claude/rules/` — seven path-scoped rule files that auto-load when a session touches a matching path (FRACTAL protocol, plugin authoring, decision ledger, wiki conventions, fixture naming, markdown authoring, memory-vs-wiki). `tools/check-rules.sh` gates the frontmatter shape and every path each rule cites.
+
+### Standards
+
+`standards/` — engineering principles, architecture patterns, the distribution and project-maintenance operating models, and six PR-review guides, cross-indexed in `standards/guide-reference-matrix.md` (gated by `tools/check-guide-matrix.sh`).
+
+### Fixture corpus
+
+`fixtures/taskflow/` — a self-consistent synthetic corpus (blueprints, workstream PRDs, HANDOFFs, wiki docs, decision entries, a RACI cast) every subsystem above is exercised against. See [`docs/fixtures-and-e2e.md`](docs/fixtures-and-e2e.md) for the full inventory and how to run the end-to-end.
+
+---
+
 ## Platform Support
 
 | Platform | Status | Guide |
 |----------|--------|-------|
-| **Claude Code** | First-class | This README + `example-claude/README.md` |
-| **Cursor** | Community-supported | [SETUP-CURSOR.md](SETUP-CURSOR.md) — adapt Claude Code agents into Cursor rules |
+| **Claude Code** | First-class | This README + [SETUP-CLAUDE-CODE.md](SETUP-CLAUDE-CODE.md) |
+| **Cursor** | Community-supported, possibly stale | [SETUP-CURSOR.md](SETUP-CURSOR.md) — adapt Claude Code agents into Cursor rules |
 
 ---
 
 ## Customization
 
-### Agent Overlay (Local Config)
-
-FRACTAL supports an overlay mechanism for project-specific customization. Create `*.local.md` files alongside any agent to extend or override sections without modifying the base files:
-
-```
-.claude/agents/
-├── architect.md           # Base agent (don't edit — upgradeable)
-├── architect.local.md     # Your project-specific overrides (gitignored or committed)
-├── feature-lead.md        # Base agent
-├── feature-lead.local.md  # Your overrides
-└── strategist.md          # Base agent
-```
-
-**How it works:** When an agent is invoked, Claude Code reads both the base file and the `.local.md` file. The local file's content is appended to the base agent's context. Use it for:
-
-- Project-specific tech stack details
-- Custom design principles
-- Additional forbidden patterns
-- Domain-specific terminology
-
-**Upgrading FRACTAL:** When you pull a new version of FRACTAL, replace the base agent files. Your `.local.md` overrides persist untouched.
-
-> **Note:** If you prefer to edit the base files directly (simpler, but requires re-applying changes on upgrade), that works too. The overlay is optional.
-
-### What to Customize
-
-| File | What to Change |
+| Surface | What to Change |
 |------|----------------|
-| `CLAUDE.md` | Product identity, tech stack, commands, conventions, forbidden patterns |
-| `agents/architect.md` | Project name, tech stack, design principles, technical standards |
-| `agents/feature-lead.md` | Project-specific code standards (the base standards work for most projects) |
-| `agents/strategist.md` | Usually no changes needed — it interviews you |
-| `fractal/EVAL_TEMPLATES/` | Build/lint/test commands for your stack, evaluation personas |
+| `CLAUDE.md` | Product identity, tech stack, commands, conventions, forbidden patterns — the primary customization surface |
+| `.claude/fractal/EVAL_TEMPLATES/` | Build/lint/test commands for your stack, evaluation personas |
+| `standards/guide-reference-matrix.md` | Which project guides an Architect cites in a workstream PRD, by write-manifest pattern |
+| `.claude/rules/` | Add your own path-scoped rule file; `tools/check-rules.sh` gates its shape |
+
+The four tier agents ship from the `fractal-core` plugin rather than as files copied into your project — customize their behavior through `CLAUDE.md` context (read at session start) rather than editing the plugin's agent definitions directly.
 
 ---
 
@@ -197,24 +214,31 @@ fractal-agent-system/
 ├── The FRACTAL Multi-Agent System.md  # System overview and architecture reference
 ├── LICENSE                      # MIT
 ├── BEST-PRACTICES.md            # Lessons from production use
+├── CHANGELOG.md                 # Router version history
+├── .claude-plugin/
+│   └── marketplace.json         # Marketplace manifest — source of truth for the 6 plugins
 ├── ROUTING_LOGIC/
 │   ├── README.md                # Router command reference
 │   └── router.py                # Deterministic state machine (canonical source)
-├── example-claude/              # Installable .claude — copy to your project as .claude
-│   ├── CLAUDE.md                # Sample always-on context doc (TaskFlow demo)
-│   ├── agents/                  # Architect, Strategist, Feature Lead, Sub-Agent
-│   ├── skills/                  # fractal-init, pulse, handoff, gap-analysis, commit-summarize
-│   └── fractal/
-│       ├── router.py            # Copy of canonical router
-│       ├── STRATEGIST-example.md # Sample completed Strategist doc
-│       ├── BLUEPRINT-Example.yaml
-│       ├── EVAL_TEMPLATES/      # Layer 1–4 eval templates with examples
-│       ├── intake/              # Strategist intake folder with token budget guide
-│       └── workstreams/         # Example workstream PRDs
+├── .claude/
+│   ├── CLAUDE.md                # Always-on context doc (TaskFlow demo)
+│   ├── rules/                   # 7 path-scoped auto-loading rule files
+│   ├── plugins/                 # The 6 installable plugins (agents + skills)
+│   └── fractal/                 # This repo's own running FRACTAL instance
+│       ├── router.py            # Synced copy of the canonical router
+│       ├── templates/           # PRD, BLUEPRINT, HANDOFF, PULSE skeletons
+│       ├── EVAL_TEMPLATES/       # Layer 1–4 eval templates
+│       └── workstreams/         # This repo's own workstream PRDs
+├── standards/                    # Engineering principles, architecture patterns, PR-review guides
+├── tools/                        # Deterministic gates: validate-plugins, check-rules,
+│                                 # check-guide-matrix, check-router-identity, router-smoke,
+│                                 # decision-ledger, wiki-index, scheduled-fractal-runner, repo-hygiene
+├── fixtures/taskflow/            # Synthetic NOVA-initiative corpus (see docs/fixtures-and-e2e.md)
 └── docs/                        # Reference docs and theory (not installable)
     ├── STRATEGIST.md, ARCHITECT.md, BLUEPRINT.md, PRD.md
     ├── FEATURELEAD.md, ExampleSubAgent.md, PULSE.md, HANDOFF.md
-    ├── The FRACTAL Evaluation Framework.md
+    ├── harness-gap-analysis.md, harness-upgrade-roadmap.md
+    ├── fixtures-and-e2e.md, wiki-conventions.md
     └── ...
 ```
 
@@ -222,12 +246,13 @@ fractal-agent-system/
 
 ## Known Gotchas
 
-1. **BLUEPRINT must be a top-level list** — Start with `- name:` at the root. Do not wrap in `phases:` or any other key.
-2. **`router.py` supports `--blueprint`** — Use `python3 router.py --blueprint BLUEPRINT-MyEpic.yaml init` to avoid editing the constant. Or update `BLUEPRINT_PATH` in the file.
-3. **PyYAML** — `pip install pyyaml` if `import yaml` fails. Not in package.json.
-4. **`.state.json`** — Add to `.gitignore`; it is a runtime artifact.
-5. **`router.py pulse`** — Pass the full path to `PULSE.md`, not the workstream directory.
-6. **Feature Leads must never run `router.py init`** — It wipes all workstream state to NOT_STARTED. They only run `router.py update <workstream-name> COMPLETE`.
+1. **BLUEPRINT accepts two shapes** — a top-level phased list (`- name: ... workstreams: [...]`) or a flat mapping (`workstreams:` with `id:`/`depends_on:`). `_normalize_blueprint()` coerces either into one canonical form before `init`/`next`/`update` see it. See `fixtures/taskflow/blueprints/` for one worked example of each.
+2. **`router.py` supports `--blueprint`** — a relative path resolves against the cwd, then the script's own directory, then the repo root. Use it instead of editing the `BLUEPRINT_PATH` constant.
+3. **PyYAML** — `pip install pyyaml` if `import yaml` fails.
+4. **`.state.json`** — a runtime artifact; keep it gitignored.
+5. **`router.py pulse`** — pass the full path to `PULSE.md`, not the workstream directory.
+6. **Feature Leads must never run `router.py init`** — it wipes all workstream state to `NOT_STARTED`. They only run `router.py update <workstream-name> COMPLETE`.
+7. **`ROUTING_LOGIC/router.py` is canonical; `.claude/fractal/router.py` is a synced copy** — `tools/check-router-identity.sh` fails the build the moment they drift. Edit the canonical copy and re-sync the other.
 
 ---
 

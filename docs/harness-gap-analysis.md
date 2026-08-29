@@ -1,7 +1,7 @@
 # Harness Gap Analysis — FRACTAL vs. The Field
 
 **Status:** Observation only (recommendations go in [`harness-upgrade-roadmap.md`](./harness-upgrade-roadmap.md))
-**Date:** 2026-04-14
+**Date:** 2026-04-14 (original score below) — see [2026-08-28 re-score](#2026-08-28-re-score-fractal-only) for the current FRACTAL row
 **Scoring source:** `docs/research-claude-code-harness.md` (patterns from public source analysis) + primary README/docs fetches for each competitor
 **Scoring scale:** 0 (absent) / 1 (partial) / 2 (strong). Max per harness = 24. Ties broken by leverage.
 
@@ -227,6 +227,32 @@ Each competitor's scoring was grounded in:
 - **Cline:** [github.com/cline/cline README](https://github.com/cline/cline) — Plan/Act modes, checkpoints, `copilot_swe_agent_use_subagents` flag.
 - **OpenCode / everything-claude-code / LangGraph:** web searches (Stoneforge, Fungies, NocoBase roundups) + own READMEs.
 - **FRACTAL:** this repo — `.claude/agents/*.md`, `.claude/skills/*`, `.claude/fractal/router.py`, `BEST-PRACTICES.md`, `docs/The FRACTAL Evaluation Framework.md`, `docs/PULSE.md`, `docs/HANDOFF.md`, and the just-written `docs/claude-md-audits/2026-04-14-taskflow.md`.
+
+---
+
+## 2026-08-28 Re-score — FRACTAL only
+
+**What changed since 2026-04-14:** the plugin/marketplace port (six plugins, 37 skills + 4 tier agents across `fractal-core`/`fractal-planning`/`fractal-tools`/`fractal-wiki`/`fractal-runner`/`fractal-pr-review`), the decision ledger (`tools/decision-ledger/`), the committed BM25 wiki index (`tools/wiki-index/`), the scheduled runner (`tools/scheduled-fractal-runner/`), the `.claude/rules/` path-scoped layer, and — the item that actually moved a score — an "Output Discipline"-equivalent §0 reading-rules block (word caps, no affirmations, no trailing summaries, verify-recalled-facts-before-acting) landed in all four tier agent files. This section re-scores FRACTAL only; the eight competitor rows above are frozen at their 2026-04-14 values (not re-benchmarked this pass) — do not read this as claiming they stood still, only that FRACTAL is the row this repo can attest to firsthand.
+
+| Harness | D1 | D2 | D3 | D4 | D5 | D6 | D7 | D8 | D9 | D10 | D11 | D12 | **Total** | % | Δ vs 04-14 |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| **FRACTAL** | 2 | 1 | **2** | 0 | 1 | 1 | 2 | 2 | 2 | **2** | 1 | 2 | **18** | **75%** | **+3** |
+
+FRACTAL now ties Superpowers (18/24, 75%) for second place and closes one point of the four-point gap to Claude Code stock (20/24, 83%).
+
+### What moved, dimension by dimension
+
+- **D10 (output discipline: 0 → 2).** The exact upgrade the roadmap's #1 item called for. `.claude/plugins/fractal-core/agents/{architect,strategist,feature-lead,sub-agent}.md` each carry a `§0. Reading rules` table: ≤25-word intermediate / ≤100-word final caps, a ban on opening affirmations, no unsolicited trailing summaries, and "verify [recalled facts] before acting — read the live state pointer first." That last clause is also roadmap item #12 (memory-as-hint verification) — closed as a side effect, not a separate workstream.
+- **D3 (skills ecosystem: 1 → 2).** 37 skills across 6 plugins (was 7 flat skills) — breadth now rivals or exceeds Superpowers' 20+ and gstack's 23. Caveat, so this isn't read as full parity: Superpowers' D3=2 rests on *mandatory, enforced* workflow skills (the agent is required to check for a relevant skill before any task); FRACTAL's skills remain slash-invoked or description-triggered, not enforced. The three methodology skills the roadmap named specifically — TDD-loop, systematic-debug, Socratic-brainstorm (roadmap items #4, #5, #6 as WS-4 and neighbors) — did **not** land; there is no `tdd-loop`, `systematic-debug`, or `brainstorm` skill anywhere in the tree. The 2 reflects breadth and organization, not enforcement parity.
+- **D4 (hooks: unchanged at 0).** No `settings.json` hook definitions exist anywhere in the repo — only `.claude/settings.local.json`'s Bash permission allowlist, exactly as in April. The `.claude/rules/` path-scoped layer that landed this cycle is a *context-loading* mechanism (auto-injected instructions keyed on file path), not a programmatic event hook (`PreToolUse`/`PostToolUse`/`SessionStart`/etc.) — it does not close this gap and is not counted toward it. Still FRACTAL's single largest deficit versus the field.
+- **D2 (context/memory: unchanged at 1).** The verify-before-acting clause (see D10 above) is a real, narrow win for this dimension's "memory-as-hint verification" gap, but the three-layer pointer/topic/transcript index and idle-consolidation pattern the 2026-04-14 analysis called out are still absent, so the dimension stays at partial credit rather than moving to strong.
+- **D5, D6, D9, D11 — unchanged.** No side-query Sub-Agent permission classifier (D5), no Feature Lead plan-mode read-only phase or `PLAN.md` gate (D6), no fork/teammate/worktree Sub-Agent flavor classification (D11). D9 (orchestration) stays at its existing max of 2 — router `2.0.0`'s dual blueprint-shape normalization and `tools/router-smoke.sh` reinforce the lead without raising a ceiling that was already full.
+- **D7, D8, D12 — unchanged at their existing max of 2.** Reinforced by new evidence (the decision-ledger and repo-hygiene test suites for D7; the scheduled runner's evidence artifacts for D12) but the rubric's 2 was already the ceiling.
+- **D8 caveat:** the `2026-04-14-taskflow.md` CLAUDE.md audit (22/24) has not been re-run against the current `.claude/CLAUDE.md`, which grew from 357 to 386 lines this cycle (new plugin/rules/fixture sections) and never had the WS-2 top-3 fixes (canonical query/form/test templates, Design Tokens/Server Action link-out, sub-300-line target) applied. The 2/2 dimension score is a harness-capability judgment (a CLAUDE.md exists and is comprehensive), not a claim that the prior 22/24 audit score still holds unverified — re-run `claude-md-audit` before citing a number.
+
+### Honest headline
+
+FRACTAL closed exactly the two roadmap items with the lowest effort and least cross-dependency (WS-1's output-discipline rollout, and its side-effect on the D2/#12 verification gap) plus grew skills breadth as a byproduct of the plugin port. It did not touch hooks (D4), plan-mode enforcement (D6), the permission classifier (D5), or subagent-flavor classification (D11) — those remain exactly where the 2026-04-14 analysis left them. 18/24 is a real gain, not a swept board.
 
 ---
 

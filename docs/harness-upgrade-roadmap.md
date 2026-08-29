@@ -1,11 +1,24 @@
 # FRACTAL Harness Upgrade Roadmap
 
 **Status:** Advisory (not yet encoded as a BLUEPRINT)
-**Date:** 2026-04-14
+**Date:** 2026-04-14 — see [Status as of 2026-08-28](#status-as-of-2026-08-28) for what has since shipped
 **Source inputs:**
 - [`research-claude-code-harness.md`](./research-claude-code-harness.md) — what "best practice" looks like
 - [`harness-gap-analysis.md`](./harness-gap-analysis.md) — where FRACTAL stands (15 / 24)
 - [`claude-md-audits/2026-04-14-taskflow.md`](./claude-md-audits/2026-04-14-taskflow.md) — first CLAUDE.md audit (22 / 24)
+
+---
+
+## Status as of 2026-08-28
+
+**Shipped:**
+- **#1 — Output-discipline section, every agent prompt.** All four `.claude/plugins/fractal-core/agents/*.md` carry a `§0. Reading rules` table with word caps, an affirmation ban, and a no-trailing-summary rule — the exact shape WS-1 specified. See the [2026-08-28 re-score](./harness-gap-analysis.md#2026-08-28-re-score-fractal-only) for the resulting D10 move (0 → 2).
+- **#12 — Memory-as-hint verification rule**, as a side effect of #1: the same §0 block adds "verify recalled facts before acting — read the live state pointer first."
+- Beyond the ranked backlog below: the plugin/marketplace port itself (not originally a roadmap line item) — six plugins, 37 skills, the decision ledger, the committed BM25 wiki index, the scheduled runner, and the `.claude/rules/` layer. See `README.md`'s capability tour.
+
+**Not shipped — still open exactly as scoped below:** #2 (CLAUDE.md audit top-3), #3 (hooks MVP), #4 (cache-boundary convention), #5/#6/#7 (TDD-loop / systematic-debug / Socratic-brainstorm methodology skills), #8 (plan-mode enforcement), #9 (subagent-flavor classification), #10 (permission classifier). None of these should be assumed done because adjacent 2.0 work landed — verify against the tree before citing any of them as shipped.
+
+**Next landing — typed work contracts.** An early, exploratory foundation doc and a set of JSON Schemas (capability, handoff, evidence, event, context-artifact, work-contract) live under `docs/fractal-harness-fork/` — not wired into the router, not validated by any deterministic gate, not a roadmap backlog item as of this writing. Treat it as direction, not a shipped capability: the next roadmap revision should decide whether to formalize it into a numbered backlog item (schema validation in `router.py update`, a `check-contracts.sh` gate) or fold specific pieces into the existing HANDOFF/PULSE templates instead of introducing a parallel contract format.
 
 ---
 
@@ -36,7 +49,7 @@ Priority is a function of `Impact / Effort` with Risk as a tiebreaker (lower ris
 
 | # | Upgrade | Impact | Effort | Risk | Deps | Source gap |
 |---:|---|:-:|:-:|:-:|---|---|
-| **1** | **Add output-discipline section to every agent prompt** (word caps, no affirmations, no trailing summaries) | H | XS | L | — | [Gap D10](./harness-gap-analysis.md#d10--output-discipline--token-hygiene) · [Research §10](./research-claude-code-harness.md) |
+| **1** | ✅ **SHIPPED** (2026-08-28) — **Add output-discipline section to every agent prompt** (word caps, no affirmations, no trailing summaries) | H | XS | L | — | [Gap D10](./harness-gap-analysis.md#d10--output-discipline--token-hygiene) · [Research §10](./research-claude-code-harness.md) |
 | **2** | **Apply CLAUDE.md audit top-3 recommendations** (canonical queries/forms/tests, link-out Design Tokens + Server Action, add output-discipline section) | H | S | L | — | [Audit](./claude-md-audits/2026-04-14-taskflow.md) |
 | **3** | **Hooks inventory + minimum-viable settings-based hook set** (PostToolUse for Bash, PreCompact logging, SessionStart loader) | H | M | M | — | [Gap D4](./harness-gap-analysis.md#d4--hooks--extensibility) |
 | **4** | **Cache-boundary convention in agent prompts** (static preamble / dynamic suffix split; `DANGEROUS_uncachedSystemPromptSection` tag convention) | H | S | L | #1 | [Research §2](./research-claude-code-harness.md) |
@@ -47,7 +60,7 @@ Priority is a function of `Impact / Effort` with Risk as a tiebreaker (lower ris
 | **9** | **Sub-Agent fork / teammate / worktree classification** (encode which flavor in workstream PRD) | M | S | L | — | [Gap D11](./harness-gap-analysis.md#d11--subagent-forking-model) |
 | **10** | **Side-query permission classifier for Sub-Agent Bash calls** (instead of flat allowlist) | M | M | M | #3 | [Gap D5](./harness-gap-analysis.md#d5--permission-model) |
 | **11** | **Three-layer memory convention in CLAUDE.md** (pointers always loaded; topic files on demand; transcripts greppable) | M | S | L | #2 | [Gap D2](./harness-gap-analysis.md#d2--context--memory-management) |
-| **12** | **Memory-as-hint verification rule** (Architect must verify recalled facts before acting on them) | M | XS | L | #11 | [Research §7](./research-claude-code-harness.md) |
+| **12** | ✅ **SHIPPED** (2026-08-28, as a side effect of #1) — **Memory-as-hint verification rule** (Architect must verify recalled facts before acting on them) | M | XS | L | #11 | [Research §7](./research-claude-code-harness.md) |
 | **13** | **Compaction / retry circuit breakers** (`MAX_CONSECUTIVE_*` constants anywhere Feature Lead retries) | M | S | L | — | [Research §7](./research-claude-code-harness.md) |
 | **14** | **Layer 2 eval template Q6/Q7** (already queued in `BEST-PRACTICES.md` §3) | M | XS | L | — | `BEST-PRACTICES.md` §3 |
 | **15** | **False-positive registry for LLM judge** (so Layer 2 evals can learn from prior misfires) | M | M | L | #14 | `BEST-PRACTICES.md` §3 |
@@ -67,7 +80,7 @@ Priority is a function of `Impact / Effort` with Risk as a tiebreaker (lower ris
 
 These are the five roadmap items that should be candidates for the next BLUEPRINT. Each is scoped small enough to execute as one Feature Lead invocation.
 
-### WS-1 — Output Discipline Rollout
+### WS-1 — Output Discipline Rollout — ✅ SHIPPED (2026-08-28)
 
 **Problem:** FRACTAL scores 0 / 2 on output discipline. Claude Code's internal A/B showed ~1.2% token reduction from replacing generic "be concise" with explicit numeric caps. Across 4 agent tiers and every skill, that compounds.
 
@@ -190,3 +203,5 @@ Target after top 5 execution (estimated):
 - Agent tiers: **4** (unchanged).
 
 Re-run both `claude-md-audit` and a fresh pass of the gap analysis after the top-5 ships; commit the delta.
+
+**2026-08-28 actual (1 of 5 shipped, #4 skills nudge unplanned):** Gap-analysis: **18 / 24 (75%)** — see the [2026-08-28 re-score](./harness-gap-analysis.md#2026-08-28-re-score-fractal-only) for the full breakdown; D10 closed as predicted, D3 moved as a byproduct of the plugin port rather than the TDD-loop skill, D4 did not move. CLAUDE.md audit: not re-run (still citing 22/24 from 2026-04-14; do not treat as current — the file changed since). Skills: **37** across 6 plugins (roadmap predicted 8; actual growth came from the plugin port, not the single `tdd-loop` skill this section anticipated). Hooks: **0** (unchanged). Agent tiers: **4** (unchanged).

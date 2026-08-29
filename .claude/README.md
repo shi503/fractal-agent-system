@@ -8,7 +8,8 @@ This folder is a **ready-to-install** FRACTAL setup. Copy it into your project a
 
 ```bash
 # From your project root:
-cp -r path/to/fractal-agent-system/example-claude .claude
+/plugin marketplace add path/to/fractal-agent-system
+/plugin install fractal-core@fractal-marketplace
 ```
 
 **That's it.** No file edits required for a first run. The agents, skills, eval templates, and a sample `CLAUDE.md` are pre-filled with a realistic demo project (TaskFlow kanban tracker).

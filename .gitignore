@@ -37,3 +37,8 @@ next-env.d.ts
 prisma/.env
 
 /app/generated/prisma
+
+# Local ideation/working material — never committed
+docs/fractal-harness-fork/
+.herenow/
+.obsidian/

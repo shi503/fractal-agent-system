@@ -1,7 +1,0 @@
-# Runtime artifacts — do not commit
-.state.json
-workstreams/*/PULSE.md
-workstreams/*/HANDOFF.md
-# Intake contents (README.md is committed)
-intake/*
-!intake/README.md

@@ -1,5 +1,11 @@
 # FRACTAL Setup Guide — Cursor
 
+> **Community-supported, possibly stale.** This guide has not been re-verified against the
+> 2.0 plugin-based install (see [README.md](README.md) and
+> [SETUP-CLAUDE-CODE.md](SETUP-CLAUDE-CODE.md)) or Cursor's current rules/skills surface.
+> Treat the steps below as a starting point, not a guarantee — file an issue or a PR if you
+> find it drifted.
+
 This guide walks through integrating FRACTAL into a Cursor project. Cursor uses rules (`.mdc` files) and skills (SKILL.md) instead of Claude Code's agent frontmatter. The deterministic router and BLUEPRINT format are the same; only the integration points differ.
 
 **Time to set up:** ~30 minutes  
@@ -69,13 +75,13 @@ Commit: `router.py`, `BLUEPRINT-*.yaml`, and workstream PRD `.md` files. Do not 
 
 ## 5. Install Cursor Rules
 
-Create Cursor rule files from the Claude Code agent definitions. The source agents live in `example-claude/agents/`:
+Create Cursor rule files from the Claude Code agent definitions. The source agents live in `.claude/plugins/fractal-core/agents/`:
 
 ```bash
 # Copy agent definitions as Cursor rules (adapt frontmatter for .mdc format)
-cp fractal-agent-system/example-claude/agents/architect.md     .cursor/rules/fractal-architect.mdc
-cp fractal-agent-system/example-claude/agents/feature-lead.md  .cursor/rules/fractal-feature-lead.mdc
-cp fractal-agent-system/example-claude/agents/sub-agent.md     .cursor/rules/fractal-sub-agent.mdc
+cp fractal-agent-system/.claude/plugins/fractal-core/agents/architect.md     .cursor/rules/fractal-architect.mdc
+cp fractal-agent-system/.claude/plugins/fractal-core/agents/feature-lead.md  .cursor/rules/fractal-feature-lead.mdc
+cp fractal-agent-system/.claude/plugins/fractal-core/agents/sub-agent.md     .cursor/rules/fractal-sub-agent.mdc
 ```
 
 After copying, edit each `.mdc` file to adapt the Claude Code agent frontmatter (`name`, `model`, `color`) to Cursor's rule format. The body content (system prompt, protocols, constraints) works as-is.
@@ -93,12 +99,12 @@ Cursor does not have a "model" field in rules; model selection is per chat or pe
 Copy the skill directories from the Claude Code bundle:
 
 ```bash
-cp -r fractal-agent-system/example-claude/skills/fractal-init     .cursor/skills/
-cp -r fractal-agent-system/example-claude/skills/pulse            .cursor/skills/
-cp -r fractal-agent-system/example-claude/skills/handoff          .cursor/skills/
-cp -r fractal-agent-system/example-claude/skills/commit-summarize .cursor/skills/
-cp -r fractal-agent-system/example-claude/skills/gap-analysis     .cursor/skills/
-cp -r fractal-agent-system/example-claude/skills/quality-pass     .cursor/skills/
+cp -r fractal-agent-system/.claude/plugins/fractal-core/skills/fractal-init     .cursor/skills/
+cp -r fractal-agent-system/.claude/plugins/fractal-core/skills/pulse            .cursor/skills/
+cp -r fractal-agent-system/.claude/plugins/fractal-core/skills/handoff          .cursor/skills/
+cp -r fractal-agent-system/.claude/plugins/fractal-core/skills/commit-summarize .cursor/skills/
+cp -r fractal-agent-system/.claude/plugins/fractal-core/skills/gap-analysis     .cursor/skills/
+cp -r fractal-agent-system/.claude/plugins/fractal-core/skills/quality-pass     .cursor/skills/
 ```
 
 After copying, update the `.claude/fractal/` paths in each SKILL.md to `.fractal/` (see §7 below).

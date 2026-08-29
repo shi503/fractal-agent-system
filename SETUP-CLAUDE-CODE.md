@@ -2,31 +2,48 @@
 
 This guide walks through integrating FRACTAL into a Claude Code project from scratch. It documents the concrete setup steps, gotchas encountered, and conventions established from production use.
 
-**Time to set up:** ~30 minutes (or ~5 minutes with the installable example)
+**Time to set up:** ~10 minutes with the marketplace path, ~30 minutes manual
 **Prerequisites:** Claude Code CLI, Python 3, `pyyaml`
 
 ---
 
-## Option A: Install the full example (fastest)
+## Option A: Install via the plugin marketplace (fastest, recommended)
 
-Copy the `example-claude` folder into your project as `.claude`. You get the full structure: agents, skills, fractal (router, intake folder, ISSUES template, EVAL_TEMPLATES, example BLUEPRINT and workstream PRDs).
+The four tier agents and every operational skill ship as Claude Code plugins — you no longer copy files into your project to get them.
 
 ```bash
-# From your project root:
-cp -r path/to/fractal-agent-system/example-claude .claude
+# From a checkout of this repo (or point at wherever you cloned it):
+```
+```
+/plugin marketplace add .
+/plugin install fractal-core@fractal-marketplace
 ```
 
-Then:
+Add the others as your role needs them: `fractal-tools` (general dev helpers, every repo),
+`fractal-planning` (Architect/Strategist work), `fractal-wiki` (repos with a markdown wiki
+substrate), `fractal-runner` (the scheduled runner), `fractal-pr-review` (active PR flow).
 
-1. **Configure router** — Edit `.claude/fractal/router.py` and set `BLUEPRINT_PATH` to your blueprint (e.g. `BLUEPRINT-MyEpic.yaml`).
-2. **Add .gitignore** — In your project root, add the entries from §4 below (`.state.json`, `workstreams/*/PULSE.md`, `workstreams/*/HANDOFF.md`, and optionally `intake/*` with `!intake/README.md`).
-3. **Customize** — Replace `{project}` and paths in agents; edit EVAL_TEMPLATES with your build commands and guiding principles; create your BLUEPRINT and workstream PRDs.
+Plugin install gives you the agents and skills. It does **not** give your project a router or
+a state directory — those are project-side artifacts, not plugin content, because
+`router.py` is the deterministic piece FRACTAL's design deliberately keeps out of the LLM's
+hands. Wire those up:
 
-See `example-claude/README.md` in the repo for a short reference. The rest of this guide (§1–§11) applies the same once the folder is in place.
+1. **Copy the router into your project:**
+   ```bash
+   mkdir -p .claude/fractal/workstreams
+   cp path/to/fractal-agent-system/ROUTING_LOGIC/router.py .claude/fractal/router.py
+   ```
+2. **Add `.gitignore` entries** — see §4 below.
+3. **Write your first BLUEPRINT and workstream PRDs** — see §7–8 below; both sections apply
+   identically whether you installed via the marketplace or built everything by hand.
+
+Then skip to §9 (Initialize and Run). The rest of this guide (§1–§11) is the manual path —
+useful if your Claude Code host doesn't support plugins, or you want to vendor the agent and
+skill content directly instead of installing it.
 
 ---
 
-## Option B: Manual setup (from scratch)
+## Option B: Manual setup (no plugin support)
 
 ---
 
@@ -39,7 +56,6 @@ python3 -c "import yaml; print('pyyaml ok')"
 
 # If pyyaml is missing:
 pip install pyyaml
-# or: pip3 install pyyaml
 ```
 
 ---
@@ -73,6 +89,7 @@ STATE_PATH     = os.path.join(os.path.dirname(__file__), ".state.json")
 The router handles two BLUEPRINT formats:
 - **Pure `.yaml`/`.yml` files** — read directly (recommended)
 - **`.md` files** — extracts the fenced ` ```yaml ` block
+- Both a top-level **phased** list and a flat single-mapping shape are accepted — `_normalize_blueprint()` coerces either into one canonical form before `init`/`next`/`update` run. See `fixtures/taskflow/blueprints/` for one worked example of each shape.
 
 ---
 
@@ -93,170 +110,45 @@ The `router.py`, `BLUEPRINT-*.yaml`, and workstream PRD `.md` files **are** comm
 
 ## 5. Create Agent Definitions
 
-Create three agent files in `.claude/agents/`. These integrate with Claude Code's native agent system (invocable via the `Agent` tool with `subagent_type`).
+Copy the three agent files directly from this repo's `fractal-core` plugin source rather than authoring them from scratch — they carry the reading-discipline contract (word caps, verification-before-acting, tier discipline) already dialed in:
 
-### Architect Agent
-
-Your primary Claude Code session or existing CTO/planner agent. Add an **Architect Mode** section to it:
-
-```markdown
-## Architect Mode (FRACTAL Epics)
-
-When working on a large epic, shift into Architect mode. Rules:
-- Never write code — only generate BLUEPRINTs, write workstream PRDs, evaluate HANDOFFs
-- BLUEPRINT workstreams must have explicit file manifests — ambiguous PRDs produce ambiguous work
-- Dependency edges are the core value — be precise about what can run in parallel
-- HANDOFF evaluation is an approval gate — verify build passes and acceptance criteria are met
-
-### Generating a BLUEPRINT
-
-1. Decompose the epic into workstreams (3–8 is typical)
-2. Assign model tier: `sonnet` for multi-file/complex, `haiku` for single-file/mechanical
-3. Map dependency edges — most workstreams should have `dependencies: []`
-4. Write BLUEPRINT to `.claude/fractal/BLUEPRINT-{EpicName}.yaml`
-5. Write one workstream PRD per workstream to `.claude/fractal/workstreams/`
-6. Tell user to run: `python3 .claude/fractal/router.py init`
+```bash
+cp fractal-agent-system/.claude/plugins/fractal-core/agents/architect.md    .claude/agents/architect.md
+cp fractal-agent-system/.claude/plugins/fractal-core/agents/feature-lead.md .claude/agents/feature-lead.md
+cp fractal-agent-system/.claude/plugins/fractal-core/agents/sub-agent.md    .claude/agents/sub-agent.md
+cp fractal-agent-system/.claude/plugins/fractal-core/agents/strategist.md  .claude/agents/strategist.md
 ```
 
-### Feature Lead Agent
+Then customize each for your project:
 
-`.claude/agents/feature-lead.md`:
+| File | What to Change |
+|------|-----------------|
+| `architect.md` | Project name, tech stack, design principles, technical standards |
+| `feature-lead.md` | Project-specific code standards (the base standards work for most projects) |
+| `sub-agent.md` | Usually no changes needed |
+| `strategist.md` | Usually no changes needed — it interviews you |
 
-```markdown
----
-name: feature-lead
-description: "Execute a single FRACTAL workstream end-to-end. Read the workstream PRD, implement all required changes, emit PULSE heartbeats, generate HANDOFF.md on completion."
-# Valid model values: haiku | sonnet | opus | inherit  (as of 2026-03-04)
-# Search "Claude Code agent model field" for the latest valid values.
-# Context window size (200K vs 1M) is set by your plan, not this field.
-model: sonnet
-color: green
----
-
-You are a Feature Lead. You own one workstream. You do not make architectural decisions.
-
-## Session Protocol
-1. Read the workstream PRD fully before writing anything
-2. Read all files in the read manifest before modifying any write-manifest file
-3. Stay within the file manifest — do not touch files not listed
-4. Run the build gate before HANDOFF:
-   [your project's build/typecheck commands]
-5. Use /pulse [name] if session runs > 30 minutes or you hit a blocker
-6. Use /handoff [name] on completion
-
-## Delegation to Sub-Agents
-Spawn up to 2 Sub-Agents for tasks that are:
-- Single file, mechanical (no reasoning required)
-- Fully specified (you know exactly what to write)
-Provide: single-sentence task, explicit file manifest, 1–3 acceptance criteria.
-```
-
-### Sub-Agent
-
-`.claude/agents/sub-agent.md`:
-
-```markdown
----
-name: sub-agent
-description: "Execute a single atomic task. One task, explicit file manifest, terminates on completion. Use for mechanical single-file changes delegated from a Feature Lead."
-# Valid model values: haiku | sonnet | opus | inherit  (as of 2026-03-04)
-# sonnet: recommended for typed Angular/TypeScript tasks; reduces hallucination
-# haiku:  use only for pure text transforms or simple SQL with no framework code
-model: sonnet
-color: yellow
----
-
-You are a Sub-Agent executing a single atomic task.
-
-## Rules
-- One task only — if you discover additional scope, stop and report it
-- Read only your assigned files, write only your assigned files
-- Follow exactly what exists in the surrounding code — no new patterns
-- Report: what you changed, file:line references, whether acceptance criteria passed
-```
+These integrate with Claude Code's native agent system (invocable via the `Agent` tool with
+`subagent_type`, or by name in natural language — "Use the architect agent to…").
 
 ---
 
 ## 6. Create Skills
 
-Three skills that inject structured instructions into active Claude Code sessions.
+Copy the operational skills the same way, from `fractal-core`'s `skills/` directory:
 
-### `/fractal-init`
-
-`.claude/skills/fractal-init/SKILL.md`:
-
-```markdown
----
-name: fractal-init
-description: "Bootstrap a FRACTAL epic session — verify router.py, initialize state, display ready workstreams"
-argument-hint: "[blueprint filename]"
-disable-model-invocation: true
----
-
-Bootstrapping FRACTAL for the epic in $ARGUMENTS.
-
-Steps:
-1. Verify: ls .claude/fractal/router.py && ls .claude/fractal/$ARGUMENTS
-2. Run: python3 .claude/fractal/router.py init
-3. Run: python3 .claude/fractal/router.py next
-4. Print session brief: epic name, workstream count, which are parallel, recommended first step
-5. Remind: run `router.py update <name> IN_PROGRESS` before starting each workstream
+```bash
+for s in fractal-init pulse handoff gap-analysis quality-pass commit-summarize claude-md-audit fractal-maintenance; do
+  mkdir -p ".claude/skills/${s}"
+  cp "fractal-agent-system/.claude/plugins/fractal-core/skills/${s}/SKILL.md" ".claude/skills/${s}/SKILL.md"
+done
 ```
 
-### `/pulse`
-
-`.claude/skills/pulse/SKILL.md`:
-
-```markdown
----
-name: pulse
-description: "Emit a structured heartbeat and check for escalation"
-argument-hint: "[FeatureLead name]"
-disable-model-invocation: true
----
-
-Emitting heartbeat for $ARGUMENTS.
-
-Steps:
-1. Collect: tasks_completed (N/total), blockers, escalation_needed (bool)
-2. Determine pulse path: .claude/fractal/workstreams/{kebab-name}/PULSE.md
-3. Append JSON block:
-   { "timestamp": "ISO-8601", "status": "IN_PROGRESS",
-     "tasks_completed": "N/total", "blockers": "...", "escalation_needed": false }
-4. Run: python3 .claude/fractal/router.py pulse <path>
-5. If HEARTBEAT_ALERT: surface to user, stop work
-6. If HEARTBEAT_OK: one-line summary, continue
-```
-
-### `/handoff`
-
-`.claude/skills/handoff/SKILL.md`:
-
-```markdown
----
-name: handoff
-description: "Build gate + generate HANDOFF.md + mark workstream COMPLETE"
-argument-hint: "[FeatureLead name]"
-disable-model-invocation: true
----
-
-Completing workstream $ARGUMENTS.
-
-CRITICAL: Do not proceed if the build gate fails.
-
-Steps:
-1. Run build gate: [your project's build/typecheck commands]
-   Stop and fix if it fails — do not proceed to Step 2.
-2. Write .claude/fractal/workstreams/{kebab-name}/HANDOFF.md:
-   - Summary of work completed (specific: file paths, function names)
-   - Summary of work NOT completed (honest)
-   - Technical debt registered
-   - Key decisions and deviations from PRD
-   - Deterministic eval results (build: PASS/FAIL)
-3. Run: python3 .claude/fractal/router.py update <name> COMPLETE
-4. Run: python3 .claude/fractal/router.py next
-5. Tell user: "Review HANDOFF.md before accepting."
-```
+Each `SKILL.md` carries `disable-model-invocation: true` — its instructions inject into the
+*current* session for the active model to execute; it is invoked explicitly (`/fractal-init`,
+`/pulse`, `/handoff`, …), never self-fired on a passing mention. Leave that frontmatter key
+alone — see `.claude/plugins/fractal-core/skills/fractal-init/SKILL.md` for the worked
+reference.
 
 ---
 
@@ -264,7 +156,7 @@ Steps:
 
 Create `.claude/fractal/BLUEPRINT-{EpicName}.yaml`.
 
-**Critical format rule:** The file must be a **top-level YAML list**. Do NOT wrap it in a `phases:` key — `router.py` iterates the list directly and will throw `TypeError: string indices must be integers` if you use a dict wrapper.
+**Critical format rule:** The file must be a **top-level YAML list** (the phased shape) or a single flat mapping with a `workstreams:` list (the flat shape) — see `fixtures/taskflow/blueprints/` for one worked example of each. Do NOT wrap a phased list in an extra key; `router.py` iterates it directly and will throw `TypeError: string indices must be integers` if you use an unexpected dict wrapper.
 
 ```yaml
 # BLUEPRINT-MyEpic.yaml
@@ -306,14 +198,14 @@ Create `.claude/fractal/BLUEPRINT-{EpicName}.yaml`.
 | Value | Maps to | Best for |
 |-------|---------|----------|
 | `haiku` | Claude Haiku | Pure text transforms, simple SQL, tasks with no framework code |
-| `sonnet` | Claude Sonnet | All Feature Lead workstreams, Angular/TypeScript, multi-file reasoning |
+| `sonnet` | Claude Sonnet | All Feature Lead workstreams, typed frontend frameworks, multi-file reasoning |
 | `opus` | Claude Opus | Architect-level orchestration, BLUEPRINT authoring, HANDOFF eval |
 | `inherit` | Parent session model | Sub-sessions that should match the caller's tier |
 
 **Context window (200K vs 1M):** This is controlled by your Claude Code plan, **not** by the `model` field in agent frontmatter. If your plan includes 1M context, all `sonnet` and `opus` agents automatically benefit. Check your plan at https://claude.ai/settings or search "Claude Code 1M context plan".
 
 **FRACTAL recommended tiers:**
-- `sub-agent` → `sonnet` — upgraded from `haiku`; sonnet handles typed Angular 21 signals/computed correctly
+- `sub-agent` → `sonnet` — upgraded from `haiku`; sonnet handles typed component-framework state primitives correctly
 - `feature-lead` → `sonnet` — reads full multi-file manifests, needs reliable framework knowledge
 - `architect` → `opus` — strategic decisions, dependency graph reasoning, HANDOFF evaluation
 
@@ -367,6 +259,12 @@ Reference existing files, APIs, interfaces — don't assume knowledge.
 - Acceptance criteria are binary (pass/fail), not subjective
 - Context section explains WHY the change is needed, not just WHAT
 - The PRD reads like a spec for a developer who has never seen the codebase
+
+If your project keeps guides worth cross-referencing across many PRDs, consider a committed
+guide-reference matrix like `standards/guide-reference-matrix.md` in this repo — a single
+table mapping guide path → which write-manifest patterns pull it in, gated by
+`tools/check-guide-matrix.sh` so a moved or renamed guide fails the build instead of drifting
+silently out of every PRD that cited it.
 
 ---
 
@@ -523,7 +421,7 @@ Milestone boundary:
 
 When starting a new epic:
 1. Create `BLUEPRINT-{NewEpic}.yaml` in `.claude/fractal/`
-2. Update `BLUEPRINT_PATH` in `router.py` to point to the new file
+2. Update `BLUEPRINT_PATH` in `router.py` to point to the new file (or pass `--blueprint` per-invocation instead — see the router README)
 3. Run `python3 .claude/fractal/router.py init` — this overwrites `.state.json`
 4. Old workstream PRDs remain as historical reference
 
@@ -541,11 +439,12 @@ These are concrete issues encountered during Claude Code integration:
 
 | Issue | What happened | Fix |
 |-------|---------------|-----|
-| YAML TypeError | Blueprint wrapped in `phases:` dict; router expects top-level list | Remove wrapper, start file with `- name:` |
+| YAML TypeError | Blueprint wrapped in an unexpected dict; router expects a top-level list or a single flat mapping | Use one of the two accepted shapes — see `fixtures/taskflow/blueprints/` |
 | router.py only handled `.md` files | Original source extracted YAML from fenced blocks; pure `.yaml` files caused parse errors | Added `.yaml`/`.yml` detection branch in `load_blueprint()` |
 | No model shown in `next` output | Original `router.py next` didn't display the `model` field | Added model display to `cmd_next()` output |
 | `.state.json` not gitignored | State file would conflict across branches | Add to `.gitignore` before first commit |
 | PULSE file path convention | `/pulse` skill needs to know the kebab-name → file path mapping | Standardize: `FeatureLead-MyWorkstream` → `workstreams/my-workstream/PULSE.md` |
+| Two blueprint shapes in the wild | Some authors wrote a flat single-mapping shape instead of the original phased list | `_normalize_blueprint()` (router `2.0.0`) coerces either shape before `init`/`next`/`update` run; `tools/check-router-identity.sh` keeps the two `router.py` copies in this repo byte-identical |
 
 ---
 
@@ -555,11 +454,13 @@ After setup, your project should look like:
 
 ```
 .claude/
-├── agents/
-│   ├── your-architect.md       # Architect — add FRACTAL Architect Mode section
-│   ├── feature-lead.md         # Feature Lead — Sonnet
-│   └── sub-agent.md            # Sub-Agent — Sonnet (use Haiku only for pure text/SQL)
-├── skills/
+├── agents/                     # Only if you took the manual path (Option B) — otherwise
+│   │                            # the four tier agents come from the fractal-core plugin
+│   ├── architect.md
+│   ├── feature-lead.md         # Sonnet
+│   ├── sub-agent.md            # Sonnet (use Haiku only for pure text/SQL)
+│   └── strategist.md
+├── skills/                     # Manual path only — plugin install covers this otherwise
 │   ├── fractal-init/SKILL.md
 │   ├── pulse/SKILL.md
 │   └── handoff/SKILL.md
