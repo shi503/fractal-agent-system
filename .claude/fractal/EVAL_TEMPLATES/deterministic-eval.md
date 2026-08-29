@@ -105,7 +105,35 @@ compliance requirements (adapt the sensitive-field list to your domain).
 
 ---
 
-## 7. Final Result
+## 7. HANDOFF Structure Gate _(repos carrying `tools/contracts/`)_
+
+The HANDOFF is the artifact this whole eval is run against, so it gets checked mechanically before anyone reads it for judgment. This step extracts the HANDOFF's structured sections to JSON and validates that JSON against `tools/contracts/schemas/handoff.schema.json`.
+
+- [ ] The HANDOFF extracts to a schema-valid instance
+
+```bash
+OUT="$(mktemp -d)"
+node tools/contracts/scripts/handoff-extract.cjs <workstream-dir>/HANDOFF.md --out "$OUT"
+node tools/contracts/scripts/validate-contracts.cjs "$OUT"
+```
+
+Exit 0 means the document carries every field the schema requires: a parseable completion date, a summary, and — the one that catches the common failure — at least one row in the §5 eval table, so a HANDOFF cannot assert the work is done while recording no gate evidence. Non-zero prints the exact missing or malformed property; fix the markdown and re-run.
+
+Negative fixture, for confirming the step is actually wired rather than silently passing:
+
+```bash
+node tools/contracts/scripts/handoff-extract.cjs \
+  tools/contracts/examples/invalid/handoff-no-eval-table/HANDOFF.md --out "$OUT"
+node tools/contracts/scripts/validate-contracts.cjs "$OUT"   # expect non-zero
+```
+
+**What this does not check.** Structure only. It cannot tell whether a **PASS** in the eval table was ever really run, whether the summary describes the diff, or whether the technical-debt entries are honest. Those are Layer 2 questions. Green here means the HANDOFF is worth reading, not that it is true.
+
+Mark N/A in repos without `tools/contracts/`.
+
+---
+
+## 8. Final Result
 
 - [ ] **PASS** — proceed to LLM judgment eval (non-mechanical workstreams) or mark COMPLETE directly (mechanical work)
 - [ ] **FAIL** — return to Feature Lead with specific failing items listed below

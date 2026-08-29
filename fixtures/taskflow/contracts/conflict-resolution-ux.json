@@ -1,0 +1,104 @@
+{
+  "$schemaRef": "work-contract",
+  "schema_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "job_id": "job:conflict-resolution-ux",
+  "workstream_id": "workstream:ws-6",
+  "title": "ConflictResolutionUX",
+  "outcome": "The small residue of merges the CRDT will not settle on its own — mostly a title rewritten on two devices — needs a human. This workstream builds the review queue that surfaces those cases, shows both candidate versions side by side, and writes the chosen winner back as a single op. It is the multi-edge workstream: it needs both the vault (WS-4) and the protocol (WS-5) in place.",
+  "requested_by": {
+    "principal_id": "role:fractal-architect",
+    "principal_type": "human",
+    "display_name": "FRACTAL Architect"
+  },
+  "assigned_to": {
+    "principal_id": "person:SP",
+    "principal_type": "human",
+    "display_name": "Feature Lead (SP)"
+  },
+  "risk_tier": "R1",
+  "scope": [
+    {
+      "repository_id": "repo:taskflow",
+      "access": "read",
+      "paths": [
+        "lib/sync/protocol.ts",
+        "lib/vault/wal.ts"
+      ]
+    },
+    {
+      "repository_id": "repo:taskflow",
+      "access": "write",
+      "paths": [
+        "app/(dashboard)/board/[boardId]/page.tsx",
+        "components/vault/candidate-diff.tsx",
+        "components/vault/merge-queue.test.tsx",
+        "components/vault/merge-queue.tsx"
+      ]
+    }
+  ],
+  "context": [
+    {
+      "id": "ctx:wiki/raw/2026/08/2026-08-12-AR-offline-vault-design-session",
+      "version": "unpinned",
+      "uri": "wiki/raw/2026/08/2026-08-12-AR-offline-vault-design-session.md"
+    },
+    {
+      "id": "ctx:wiki/synthesis/nova-architecture-synthesis",
+      "version": "unpinned",
+      "uri": "wiki/synthesis/nova-architecture-synthesis.md"
+    }
+  ],
+  "capabilities": [
+    "cap:edit-isolated-repository",
+    "cap:read-repository",
+    "cap:scoped-implementation"
+  ],
+  "acceptance": [
+    {
+      "criterion_id": "criterion:unsettled-merges-appear-in-the-review-queue-with-both-candid",
+      "description": "Unsettled merges appear in the review queue with both candidate versions rendered.",
+      "evidence_kinds": [
+        "build",
+        "e2e",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:choosing-a-winner-writes-exactly-one-op-through-the-sync-pro",
+      "description": "Choosing a winner writes exactly one op through the sync protocol.",
+      "evidence_kinds": [
+        "build",
+        "e2e",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:the-queue-is-fully-operable-from-the-keyboard-with-no-pointe",
+      "description": "The queue is fully operable from the keyboard with no pointer-only affordance.",
+      "evidence_kinds": [
+        "build",
+        "e2e",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    }
+  ],
+  "constraints": {
+    "external_effects_allowed": false,
+    "max_retries": 1
+  },
+  "dependencies": [
+    "workstream:ws-4",
+    "workstream:ws-5"
+  ],
+  "non_goals": [
+    "Changing what the CRDT considers settleable (that is a mergeloom-level decision).",
+    "Bulk resolution across many cards — backlog."
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "$schemaRef": "work-contract",
+  "schema_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "job_id": "job:vault-storage-layer",
+  "workstream_id": "workstream:ws-4",
+  "title": "VaultStorageLayer",
+  "outcome": "The browser-side vault that lets a board keep accepting edits with no network: an IndexedDB write-ahead log with a bounded quota, a monotonic replay cursor, and an eviction policy that is deterministic enough to test. The self-host memory envelope is the hard constraint the eviction policy is tuned against.",
+  "requested_by": {
+    "principal_id": "role:fractal-architect",
+    "principal_type": "human",
+    "display_name": "FRACTAL Architect"
+  },
+  "assigned_to": {
+    "principal_id": "person:RV",
+    "principal_type": "human",
+    "display_name": "Feature Lead (RV)"
+  },
+  "risk_tier": "R1",
+  "scope": [
+    {
+      "repository_id": "repo:taskflow",
+      "access": "read",
+      "paths": [
+        "decision-log/D-0003.md",
+        "wiki/sources/selfhost-resource-envelope.md"
+      ]
+    },
+    {
+      "repository_id": "repo:taskflow",
+      "access": "write",
+      "paths": [
+        "lib/vault/eviction.ts",
+        "lib/vault/index.ts",
+        "lib/vault/wal.test.ts",
+        "lib/vault/wal.ts"
+      ]
+    }
+  ],
+  "context": [
+    {
+      "id": "ctx:wiki/sources/selfhost-resource-envelope",
+      "version": "unpinned",
+      "uri": "wiki/sources/selfhost-resource-envelope.md"
+    },
+    {
+      "id": "ctx:wiki/sources/offline-sync-approaches",
+      "version": "unpinned",
+      "uri": "wiki/sources/offline-sync-approaches.md"
+    }
+  ],
+  "capabilities": [
+    "cap:design-authority",
+    "cap:edit-isolated-repository",
+    "cap:read-repository"
+  ],
+  "acceptance": [
+    {
+      "criterion_id": "criterion:hard-reload-replays-every-pending-write-with-zero-loss",
+      "description": "Hard reload replays every pending write with zero loss.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:quota-eviction-is-deterministic-and-asserted-by-a-unit-test",
+      "description": "Quota eviction is deterministic and asserted by a unit test with a fixed seed.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:peak-heap-during-the-replay-test-stays-inside-the-documented",
+      "description": "Peak heap during the replay test stays inside the documented self-host envelope.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    }
+  ],
+  "constraints": {
+    "external_effects_allowed": false,
+    "max_retries": 1
+  },
+  "dependencies": [],
+  "non_goals": [
+    "The wire protocol (WS-5).",
+    "Any user-facing merge surface (WS-6)."
+  ]
+}

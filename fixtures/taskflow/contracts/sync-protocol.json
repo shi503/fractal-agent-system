@@ -1,0 +1,100 @@
+{
+  "$schemaRef": "work-contract",
+  "schema_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "job_id": "job:sync-protocol",
+  "workstream_id": "workstream:ws-5",
+  "title": "SyncProtocol",
+  "outcome": "The wire protocol that drains the vault into the server and back. Three parts: op batching with a size ceiling, causal ordering carried by the mergeloom clock, and a resume handshake that lets a client that has been dark for half an hour catch up without a full resync.",
+  "requested_by": {
+    "principal_id": "role:fractal-architect",
+    "principal_type": "human",
+    "display_name": "FRACTAL Architect"
+  },
+  "assigned_to": {
+    "principal_id": "person:RV",
+    "principal_type": "human",
+    "display_name": "Feature Lead (RV)"
+  },
+  "risk_tier": "R1",
+  "scope": [
+    {
+      "repository_id": "repo:taskflow",
+      "access": "read",
+      "paths": [
+        "decision-log/D-0003.md",
+        "lib/vault/wal.ts"
+      ]
+    },
+    {
+      "repository_id": "repo:taskflow",
+      "access": "write",
+      "paths": [
+        "lib/sync/handshake.ts",
+        "lib/sync/protocol.test.ts",
+        "lib/sync/protocol.ts",
+        "lib/vault/index.ts"
+      ]
+    }
+  ],
+  "context": [
+    {
+      "id": "ctx:wiki/sources/offline-sync-approaches",
+      "version": "unpinned",
+      "uri": "wiki/sources/offline-sync-approaches.md"
+    },
+    {
+      "id": "ctx:wiki/raw/2026/08/2026-08-14-RV-crdt-library-eval",
+      "version": "unpinned",
+      "uri": "wiki/raw/2026/08/2026-08-14-RV-crdt-library-eval.md"
+    }
+  ],
+  "capabilities": [
+    "cap:edit-isolated-repository",
+    "cap:read-repository",
+    "cap:scoped-implementation"
+  ],
+  "acceptance": [
+    {
+      "criterion_id": "criterion:two-clients-converge-to-an-identical-board-state-after-an-in",
+      "description": "Two clients converge to an identical board state after an interleaved edit run.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:resume-handshake-recovers-from-a-30-minute-gap-without-a-ful",
+      "description": "Resume handshake recovers from a 30-minute gap without a full resync.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:version-negotiation-rejects-an-unknown-major-version-with-a",
+      "description": "Version negotiation rejects an unknown major version with a typed error, not a crash.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    }
+  ],
+  "constraints": {
+    "external_effects_allowed": false,
+    "max_retries": 1
+  },
+  "dependencies": [
+    "workstream:ws-4"
+  ],
+  "non_goals": [
+    "The user-facing merge queue (WS-6).",
+    "Server-side storage of op history beyond the retention window."
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "$schemaRef": "work-contract",
+  "schema_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "job_id": "job:notification-schema",
+  "workstream_id": "workstream:ws-1",
+  "title": "NotificationSchema",
+  "outcome": "NOVA needs one notification record shape that both the fanout service and the preference center agree on. This workstream lands that shape: a Notification row per logical event, a NotificationDelivery row per subscriber, a category enum, and an idempotency key contract every producer must honour so a retried producer never doubles a user's inbox.",
+  "requested_by": {
+    "principal_id": "role:fractal-architect",
+    "principal_type": "human",
+    "display_name": "FRACTAL Architect"
+  },
+  "assigned_to": {
+    "principal_id": "person:RV",
+    "principal_type": "human",
+    "display_name": "Feature Lead (RV)"
+  },
+  "risk_tier": "R1",
+  "scope": [
+    {
+      "repository_id": "repo:taskflow",
+      "access": "read",
+      "paths": [
+        "decision-log/D-0001.md",
+        "decision-log/D-0002.md",
+        "wiki/sources/notification-architecture-options.md"
+      ]
+    },
+    {
+      "repository_id": "repo:taskflow",
+      "access": "write",
+      "paths": [
+        "lib/notifications/idempotency.test.ts",
+        "lib/notifications/idempotency.ts",
+        "lib/notifications/types.ts",
+        "prisma/schema.prisma"
+      ]
+    }
+  ],
+  "context": [
+    {
+      "id": "ctx:wiki/sources/notification-architecture-options",
+      "version": "unpinned",
+      "uri": "wiki/sources/notification-architecture-options.md"
+    },
+    {
+      "id": "ctx:wiki/synthesis/nova-architecture-synthesis",
+      "version": "unpinned",
+      "uri": "wiki/synthesis/nova-architecture-synthesis.md"
+    }
+  ],
+  "capabilities": [
+    "cap:design-authority",
+    "cap:edit-isolated-repository",
+    "cap:read-repository"
+  ],
+  "acceptance": [
+    {
+      "criterion_id": "criterion:prisma-migration-applies-cleanly-npx-prisma-generate-succeed",
+      "description": "Prisma migration applies cleanly; npx prisma generate succeeds.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "migration",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:category-enum-covers-all-six-product-categories-each-with-a",
+      "description": "Category enum covers all six product categories, each with a documented default state.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "migration",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:idempotency-key-format-resource-id-event-is-documented-and-e",
+      "description": "Idempotency key format {resource}-{id}-{event} is documented and enforced by a unit test.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "migration",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:notificationdelivery-carries-a-replay-cursor-column-the-fano",
+      "description": "NotificationDelivery carries a replay cursor column the fanout service can range-scan.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "migration",
+        "test",
+        "typecheck"
+      ]
+    }
+  ],
+  "constraints": {
+    "external_effects_allowed": false,
+    "max_retries": 1
+  },
+  "dependencies": [],
+  "non_goals": [
+    "The fanout service itself (WS-2).",
+    "Any preference UI (WS-3).",
+    "Offline vault tables (Phase 2)."
+  ]
+}

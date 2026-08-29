@@ -1,0 +1,100 @@
+{
+  "$schemaRef": "work-contract",
+  "schema_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "job_id": "job:preference-center",
+  "workstream_id": "workstream:ws-3",
+  "title": "PreferenceCenter",
+  "outcome": "The user-facing settings surface for NOVA: category toggles, digest cadence, and quiet hours. The surface must render correctly for a user who has never saved anything, which is where the locked default policy shows up in the UI.",
+  "requested_by": {
+    "principal_id": "role:fractal-architect",
+    "principal_type": "human",
+    "display_name": "FRACTAL Architect"
+  },
+  "assigned_to": {
+    "principal_id": "person:SP",
+    "principal_type": "human",
+    "display_name": "Feature Lead (SP)"
+  },
+  "risk_tier": "R1",
+  "scope": [
+    {
+      "repository_id": "repo:taskflow",
+      "access": "read",
+      "paths": [
+        "decision-log/D-0002.md",
+        "lib/notifications/types.ts"
+      ]
+    },
+    {
+      "repository_id": "repo:taskflow",
+      "access": "write",
+      "paths": [
+        "app/(dashboard)/settings/notifications/actions.ts",
+        "app/(dashboard)/settings/notifications/page.tsx",
+        "app/(dashboard)/settings/page.tsx",
+        "components/notifications/preference-toggle.tsx"
+      ]
+    }
+  ],
+  "context": [
+    {
+      "id": "ctx:wiki/raw/2026/08/2026-08-08-SP-preference-center-sketch",
+      "version": "unpinned",
+      "uri": "wiki/raw/2026/08/2026-08-08-SP-preference-center-sketch.md"
+    },
+    {
+      "id": "ctx:wiki/synthesis/notification-fatigue-principles",
+      "version": "unpinned",
+      "uri": "wiki/synthesis/notification-fatigue-principles.md"
+    }
+  ],
+  "capabilities": [
+    "cap:edit-isolated-repository",
+    "cap:read-repository",
+    "cap:scoped-implementation"
+  ],
+  "acceptance": [
+    {
+      "criterion_id": "criterion:preference-writes-round-trip-through-a-zod-validated-server",
+      "description": "Preference writes round-trip through a Zod-validated Server Action.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:a-user-with-no-stored-row-renders-the-documented-defaults-wi",
+      "description": "A user with no stored row renders the documented defaults without writing a row.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:every-toggle-is-reachable-by-keyboard-with-a-visible-focus-r",
+      "description": "Every toggle is reachable by keyboard with a visible focus ring.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    }
+  ],
+  "constraints": {
+    "external_effects_allowed": false,
+    "max_retries": 1
+  },
+  "dependencies": [
+    "workstream:ws-1"
+  ],
+  "non_goals": [
+    "Server-side enforcement of quiet hours (WS-2 already filters at fanout time).",
+    "Per-board preference overrides — backlog."
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "$schemaRef": "work-contract",
+  "schema_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "job_id": "job:a11y-audit",
+  "workstream_id": "workstream:ws-8",
+  "title": "A11yAudit",
+  "outcome": "Audit the three surfaces NOVA added — the toast stack, the preference center, and the merge review queue — against WCAG 2.2 AA, and file each finding with a reproduction path and an owning workstream. It runs after the load harness so the audit sees the surfaces at realistic data volume rather than with three seeded rows.",
+  "requested_by": {
+    "principal_id": "role:fractal-architect",
+    "principal_type": "human",
+    "display_name": "FRACTAL Architect"
+  },
+  "assigned_to": {
+    "principal_id": "person:SP",
+    "principal_type": "human",
+    "display_name": "Feature Lead (SP)"
+  },
+  "risk_tier": "R1",
+  "scope": [
+    {
+      "repository_id": "repo:taskflow",
+      "access": "read",
+      "paths": [
+        "app/(dashboard)/settings/notifications/",
+        "components/notifications/",
+        "components/vault/"
+      ]
+    },
+    {
+      "repository_id": "repo:taskflow",
+      "access": "write",
+      "paths": [
+        "docs/a11y/findings.json",
+        "docs/a11y/nova-audit.md"
+      ]
+    }
+  ],
+  "context": [
+    {
+      "id": "ctx:wiki/synthesis/notification-fatigue-principles",
+      "version": "unpinned",
+      "uri": "wiki/synthesis/notification-fatigue-principles.md"
+    },
+    {
+      "id": "ctx:wiki/raw/2026/08/2026-08-08-SP-preference-center-sketch",
+      "version": "unpinned",
+      "uri": "wiki/raw/2026/08/2026-08-08-SP-preference-center-sketch.md"
+    }
+  ],
+  "capabilities": [
+    "cap:edit-isolated-repository",
+    "cap:mechanical-edit",
+    "cap:read-repository"
+  ],
+  "acceptance": [
+    {
+      "criterion_id": "criterion:every-nova-surface-has-a-recorded-axe-run-with-zero-critical",
+      "description": "Every NOVA surface has a recorded axe run with zero critical violations.",
+      "evidence_kinds": [
+        "build",
+        "e2e",
+        "test"
+      ]
+    },
+    {
+      "criterion_id": "criterion:a-screen-reader-pass-is-documented-for-the-merge-review-queu",
+      "description": "A screen-reader pass is documented for the merge review queue.",
+      "evidence_kinds": [
+        "build",
+        "e2e",
+        "test"
+      ]
+    },
+    {
+      "criterion_id": "criterion:each-finding-lists-a-reproduction-path-and-an-owning-workstr",
+      "description": "Each finding lists a reproduction path and an owning workstream.",
+      "evidence_kinds": [
+        "build",
+        "e2e",
+        "test"
+      ]
+    }
+  ],
+  "constraints": {
+    "external_effects_allowed": false,
+    "max_retries": 1
+  },
+  "dependencies": [
+    "workstream:ws-7"
+  ],
+  "non_goals": [
+    "Fixing the findings — each becomes its own follow-up workstream.",
+    "Auditing pre-NOVA surfaces."
+  ]
+}

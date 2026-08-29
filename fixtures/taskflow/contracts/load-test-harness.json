@@ -1,0 +1,99 @@
+{
+  "$schemaRef": "work-contract",
+  "schema_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "job_id": "job:load-test-harness",
+  "workstream_id": "workstream:ws-7",
+  "title": "LoadTestHarness",
+  "outcome": "NOVA's GA gate is a number, and nobody can produce the number twice the same way. This workstream builds the harness: one command that drives both the notification channel and the vault sync channel at the self-host ceiling, records the distribution, and fails the run when a threshold in the gate table is breached.",
+  "requested_by": {
+    "principal_id": "role:fractal-architect",
+    "principal_type": "human",
+    "display_name": "FRACTAL Architect"
+  },
+  "assigned_to": {
+    "principal_id": "person:CL",
+    "principal_type": "human",
+    "display_name": "Feature Lead (CL)"
+  },
+  "risk_tier": "R1",
+  "scope": [
+    {
+      "repository_id": "repo:taskflow",
+      "access": "read",
+      "paths": [
+        "decision-log/D-0004.md",
+        "lib/notifications/fanout.ts",
+        "lib/sync/protocol.ts"
+      ]
+    },
+    {
+      "repository_id": "repo:taskflow",
+      "access": "write",
+      "paths": [
+        "package.json",
+        "scripts/loadtest/README.md",
+        "scripts/loadtest/gates.json",
+        "scripts/loadtest/run.ts"
+      ]
+    }
+  ],
+  "context": [
+    {
+      "id": "ctx:wiki/sources/selfhost-resource-envelope",
+      "version": "unpinned",
+      "uri": "wiki/sources/selfhost-resource-envelope.md"
+    },
+    {
+      "id": "ctx:wiki/raw/2026/08/2026-08-10-CL-selfhost-constraints",
+      "version": "unpinned",
+      "uri": "wiki/raw/2026/08/2026-08-10-CL-selfhost-constraints.md"
+    }
+  ],
+  "capabilities": [
+    "cap:design-authority",
+    "cap:edit-isolated-repository",
+    "cap:read-repository"
+  ],
+  "acceptance": [
+    {
+      "criterion_id": "criterion:a-500-subscriber-board-run-reproduces-from-a-single-command",
+      "description": "A 500-subscriber board run reproduces from a single command with no manual setup.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:the-run-report-records-p50-p95-p99-per-channel-plus-peak-res",
+      "description": "The run report records p50/p95/p99 per channel plus peak resident memory.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:the-harness-exits-non-zero-when-any-gate-table-threshold-is",
+      "description": "The harness exits non-zero when any gate-table threshold is breached.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    }
+  ],
+  "constraints": {
+    "external_effects_allowed": false,
+    "max_retries": 1
+  },
+  "dependencies": [],
+  "non_goals": [
+    "Ratifying D-0004 itself — that is an owner decision, not a workstream deliverable.",
+    "Continuous scheduled runs in CI — follow-up."
+  ]
+}

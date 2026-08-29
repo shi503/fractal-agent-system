@@ -1,0 +1,100 @@
+{
+  "$schemaRef": "work-contract",
+  "schema_version": "1.0.0",
+  "contract_version": "1.0.0",
+  "job_id": "job:event-fanout",
+  "workstream_id": "workstream:ws-2",
+  "title": "EventFanout",
+  "outcome": "Turn a domain event into per-subscriber delivery rows and push them down the socket channel. The service owns three things the rest of NOVA depends on: the subscriber expansion query, the backpressure policy when a client stops draining, and the replay window a reconnecting client is entitled to.",
+  "requested_by": {
+    "principal_id": "role:fractal-architect",
+    "principal_type": "human",
+    "display_name": "FRACTAL Architect"
+  },
+  "assigned_to": {
+    "principal_id": "person:RV",
+    "principal_type": "human",
+    "display_name": "Feature Lead (RV)"
+  },
+  "risk_tier": "R1",
+  "scope": [
+    {
+      "repository_id": "repo:taskflow",
+      "access": "read",
+      "paths": [
+        "decision-log/D-0001.md",
+        "lib/notifications/types.ts"
+      ]
+    },
+    {
+      "repository_id": "repo:taskflow",
+      "access": "write",
+      "paths": [
+        "lib/notifications/channel.ts",
+        "lib/notifications/fanout.test.ts",
+        "lib/notifications/fanout.ts",
+        "lib/notifications/index.ts"
+      ]
+    }
+  ],
+  "context": [
+    {
+      "id": "ctx:wiki/raw/2026/08/2026-08-04-RV-websocket-spike-notes",
+      "version": "unpinned",
+      "uri": "wiki/raw/2026/08/2026-08-04-RV-websocket-spike-notes.md"
+    },
+    {
+      "id": "ctx:wiki/entities/websocket-fanout-service",
+      "version": "unpinned",
+      "uri": "wiki/entities/websocket-fanout-service.md"
+    }
+  ],
+  "capabilities": [
+    "cap:edit-isolated-repository",
+    "cap:read-repository",
+    "cap:scoped-implementation"
+  ],
+  "acceptance": [
+    {
+      "criterion_id": "criterion:exactly-one-delivery-row-per-eligible-subscriber-per-event-v",
+      "description": "Exactly one delivery row per eligible subscriber per event, verified by an integration test.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:reconnect-replays-the-last-200-undelivered-events-with-no-du",
+      "description": "Reconnect replays the last 200 undelivered events with no duplicates.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    },
+    {
+      "criterion_id": "criterion:backpressure-drop-path-is-covered-by-a-test-that-asserts-the",
+      "description": "Backpressure drop path is covered by a test that asserts the drop is recorded, not silent.",
+      "evidence_kinds": [
+        "build",
+        "lint",
+        "test",
+        "typecheck"
+      ]
+    }
+  ],
+  "constraints": {
+    "external_effects_allowed": false,
+    "max_retries": 1
+  },
+  "dependencies": [
+    "workstream:ws-1"
+  ],
+  "non_goals": [
+    "Preference filtering beyond reading the stored preference row (WS-3 owns the surface).",
+    "Vault sync piggybacking on the same channel (WS-5)."
+  ]
+}
