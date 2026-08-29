@@ -26,9 +26,39 @@ import sys
 from pathlib import Path
 
 MIN_TOKEN_LEN = 3
+DIGEST_SUPPRESS_MAX_LEN = 4  # candidates this short or shorter get the digest-run check
 EXCLUDE_DIRS = {".git", "node_modules", ".herenow", ".obsidian", "docs/fractal-harness-fork"}
 TOKEN_RE = re.compile(r"[a-z0-9]+")
 ALLOW_RE = re.compile(r"oss-scan-allow:\s*(\S+)")
+
+# --- digest-run matcher rule (mirrors scripts/oss-contamination-scan.sh) ---
+# A short candidate token/join can coincidentally hash-match purely because
+# it sits inside a high-entropy digest (npm sha512 integrity strings,
+# base64/base64url/hex blobs) — the tokenizer already splits on `+`, `/`,
+# `=`, so a short alnum run bounded by those is a normal token to this
+# scanner, digest or not. Suppressed per-occurrence, not by filename.
+DIGEST_RUN_RE = re.compile(r"[A-Za-z0-9+/=_-]{24,}")
+
+
+def is_digest_run(run_text: str) -> bool:
+    # Real digests mix case and digits within any 24+ char stretch; kebab-/
+    # snake-case prose identifiers are overwhelmingly lowercase-only.
+    has_upper = any(c.isupper() for c in run_text)
+    has_lower = any(c.islower() for c in run_text)
+    has_digit = any(c.isdigit() for c in run_text)
+    return has_upper and has_lower and has_digit
+
+
+def digest_runs(text: str) -> list[tuple[int, int]]:
+    return [
+        (m.start(), m.end())
+        for m in DIGEST_RUN_RE.finditer(text)
+        if is_digest_run(m.group(0))
+    ]
+
+
+def in_digest_run(start: int, end: int, runs: list[tuple[int, int]]) -> bool:
+    return any(run_start <= start and end <= run_end for run_start, run_end in runs)
 
 
 def load_hashes(hashes_path: Path) -> set[str]:
@@ -37,8 +67,11 @@ def load_hashes(hashes_path: Path) -> set[str]:
     return set(payload.get("hashes", []))
 
 
-def tokenize(text: str) -> list[str]:
-    return TOKEN_RE.findall(text.lower())
+def tokenize(text: str) -> list[tuple[str, int, int]]:
+    """Lowercased tokens with their (start, end) span in `text` (unchanged
+    by lowercasing — ASCII case folding doesn't shift character offsets).
+    """
+    return [(m.group(0), m.start(), m.end()) for m in TOKEN_RE.finditer(text.lower())]
 
 
 def is_binary(path: Path) -> bool:
@@ -107,9 +140,23 @@ def is_excluded(rel_path: str, scan_scope: str) -> bool:
     return False
 
 
-def scan(root: Path, rel_paths: list[str], scan_scope: str, hashes: set[str]) -> tuple[list[str], list[str]]:
+def _candidates(tokens: list[tuple[str, int, int]]) -> list[tuple[str, int, int]]:
+    """Every hashable token and adjacent-2-token join, each with its span."""
+    out = [(t, s, e) for t, s, e in tokens if len(t) >= MIN_TOKEN_LEN]
+    for i in range(len(tokens) - 1):
+        (t1, s1, _e1), (t2, _s2, e2) = tokens[i], tokens[i + 1]
+        join = t1 + t2
+        if len(join) >= MIN_TOKEN_LEN:
+            out.append((join, s1, e2))
+    return out
+
+
+def scan(
+    root: Path, rel_paths: list[str], scan_scope: str, hashes: set[str]
+) -> tuple[list[str], list[str], list[str]]:
     hits: list[str] = []
     allowlist_uses: list[str] = []
+    digest_suppressed: list[str] = []
 
     for rel_path in rel_paths:
         if is_excluded(rel_path, scan_scope):
@@ -117,16 +164,14 @@ def scan(root: Path, rel_paths: list[str], scan_scope: str, hashes: set[str]) ->
         abs_path = root / rel_path
 
         # Path-itself check (full-digest match).
-        path_tokens = tokenize(rel_path)
-        path_candidates = [t for t in path_tokens if len(t) >= MIN_TOKEN_LEN]
-        path_candidates += [
-            path_tokens[i] + path_tokens[i + 1]
-            for i in range(len(path_tokens) - 1)
-            if len(path_tokens[i] + path_tokens[i + 1]) >= MIN_TOKEN_LEN
-        ]
-        for cand in path_candidates:
+        path_runs = digest_runs(rel_path)
+        for cand, start, end in _candidates(tokenize(rel_path)):
             full = hashlib.sha256(cand.encode("utf-8")).hexdigest()
-            if full in hashes:
+            if full not in hashes:
+                continue
+            if len(cand) <= DIGEST_SUPPRESS_MAX_LEN and in_digest_run(start, end, path_runs):
+                digest_suppressed.append(f"{rel_path}:0:{full[:8]}")
+            else:
                 hits.append(f"{rel_path}:0:{full[:8]}")
 
         if not abs_path.is_file() or is_binary(abs_path):
@@ -138,23 +183,19 @@ def scan(root: Path, rel_paths: list[str], scan_scope: str, hashes: set[str]) ->
 
         for lineno, text in enumerate(lines, start=1):
             allow_match = ALLOW_RE.search(text)
-            tokens = tokenize(text)
-            candidates = [t for t in tokens if len(t) >= MIN_TOKEN_LEN]
-            candidates += [
-                tokens[i] + tokens[i + 1]
-                for i in range(len(tokens) - 1)
-                if len(tokens[i] + tokens[i + 1]) >= MIN_TOKEN_LEN
-            ]
-            for cand in candidates:
+            runs = digest_runs(text)
+            for cand, start, end in _candidates(tokenize(text)):
                 full = hashlib.sha256(cand.encode("utf-8")).hexdigest()
                 if full not in hashes:
                     continue
-                if allow_match is not None and allow_match.group(1) in ("*", cand):
+                if len(cand) <= DIGEST_SUPPRESS_MAX_LEN and in_digest_run(start, end, runs):
+                    digest_suppressed.append(f"{rel_path}:{lineno}:{full[:8]}")
+                elif allow_match is not None and allow_match.group(1) in ("*", cand):
                     allowlist_uses.append(f"{rel_path}:{lineno}:{full[:8]}")
                 else:
                     hits.append(f"{rel_path}:{lineno}:{full[:8]}")
 
-    return hits, allowlist_uses
+    return hits, allowlist_uses, digest_suppressed
 
 
 def main() -> int:
@@ -193,12 +234,16 @@ def main() -> int:
             scan_root = target_abs.parent
         scan_scope = "."
 
-    hits, allowlist_uses = scan(scan_root, rel_paths, scan_scope, hashes)
+    hits, allowlist_uses, digest_suppressed = scan(scan_root, rel_paths, scan_scope, hashes)
 
     for a in allowlist_uses:
         print(f"ALLOWLISTED: {a}")
+    for d in digest_suppressed:
+        print(f"DIGEST-SUPPRESSED: {d} (short token inside a high-entropy run)")
     for h in hits:
         print(h)
+    if digest_suppressed:
+        print(f"DIGEST SUPPRESSION SUMMARY: {len(digest_suppressed)} suppression(s)")
 
     return 1 if hits else 0
 
