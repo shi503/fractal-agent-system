@@ -1,0 +1,6 @@
+# Runtime artifacts — not source.
+run.log
+.run.lock
+_worktrees/
+runs/
+# state.json IS tracked (router.py ethos: the ledger is committed); its churn is intentional.

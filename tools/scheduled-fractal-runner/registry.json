@@ -1,0 +1,36 @@
+{
+  "_comment": "Scheduled FRACTAL Runner — target registry. Adding a repo to the rotation is an edit HERE, not new code. PORTABLE: no absolute machine paths live in this file. Sibling-repo paths are built from config.repos_root (override per machine with the FRACTAL_REPOS_ROOT env var); this runner's own plugin paths are derived from the script location. So any operator's machine shares this file unchanged and only sets FRACTAL_REPOS_ROOT. Two scopes: registry targets get the FULL treatment (PR review + HANDOFF evidence); the --review-requested sweep adds review-only PRs. This registry ships with exactly one target, this repo (fractal-agent-system) itself, so the runner is structurally complete and testable out of the box. Operators add their own repos as additional entries.",
+  "config": {
+    "model": "claude-opus-4-8",
+    "repos_root": "",
+    "_repos_root_note": "No default on purpose — committed config should never bake in an absolute machine path. Set FRACTAL_REPOS_ROOT to the directory containing your sibling repo checkouts before running, e.g. FRACTAL_REPOS_ROOT=$(cd .. && pwd) — repo_path = ${FRACTAL_REPOS_ROOT}/${target.repo_dir}.",
+    "owner_filter": "",
+    "reviewer": "@me",
+    "pr_review_skill": "/pr-review",
+    "pr_triage_skill": "/pr-triage",
+    "_skill_note": "Placeholder skill invocations. The fractal-pr-review plugin skill that implements these has not been filled in yet.",
+    "claude_permission_mode": "default",
+    "claude_allowed_tools_review": "Read,Grep,Glob,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr list:*),Bash(git log:*),Bash(git show:*),Bash(cat:*),Bash(ls:*),Bash(head:*),Bash(tail:*),Bash(wc:*),Bash(jq:*)",
+    "claude_allowed_tools_live": "Read,Grep,Glob,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr checks:*),Bash(gh pr list:*),Bash(gh pr comment:*),Bash(gh pr review:*),Bash(gh api:*),Bash(git log:*),Bash(git show:*),Bash(cat:*),Bash(ls:*),Bash(head:*),Bash(tail:*),Bash(wc:*),Bash(jq:*)",
+    "claude_disallowed_tools": "Edit,Write,NotebookEdit,Bash(git push:*),Bash(git commit:*),Bash(git reset:*),Bash(git checkout:*),Bash(git restore:*),Bash(git rebase:*),Bash(git apply:*),Bash(find:*),Bash(rg:*),Bash(sed:*),Bash(awk:*),Bash(xargs:*),Bash(env:*),Bash(eval:*),Bash(perl:*),Bash(python:*),Bash(python3:*),Bash(ruby:*),Bash(node:*),Bash(bash:*),Bash(sh:*),Bash(rm:*),Bash(mv:*),Bash(cp:*),Bash(chmod:*),Bash(sudo:*),Bash(curl:*),Bash(wget:*),Bash(nc:*),Bash(ssh:*),Bash(scp:*),Bash(gh gist:*),Bash(gh secret:*),Bash(gh auth:*),Bash(gh repo:*),Bash(gh release:*),Bash(gh workflow:*),Bash(gh run:*)",
+    "_tools_note": "SECURITY: we review UNTRUSTED PR code, so treat the headless agent as prompt-injected. Per-command Bash allowlisting is POROUS — exec-capable 'read' tools (find -exec, rg --pre, sed e, awk system, xargs, gh api POST/DELETE) bypass a top-level deny list because the injected command runs as their CHILD. So: (1) permission-mode=default; (2) prefer Claude's NATIVE Read/Grep/Glob (no shell, no escape) for code inspection; (3) the Bash allowlist holds ONLY non-exec commands — review mode is read-only with no find/rg/sed/awk/gh-api; live adds gh pr comment/review (+ gh api, needed for inline comments — itself mutation-capable, hence gated); (4) a deny list explicitly blocks the exec vectors AND interpreters (perl/python/ruby/node/sh) as belt-and-suspenders. tests/test-allowlist-safety.sh statically guards that exec-capable tokens never re-enter the allowlists. RESIDUAL: this is hardening, not a sandbox — gh-read still reaches what the token can, and live's gh api can mutate. The robust fix is a --permission-prompt-tool classifier OR a no-egress sandbox (bwrap, worktree read-only, network limited to api.github.com). Until that lands: the untrusted SWEEP is DISABLED (sweep.enabled=false) and LIVE is registry-only after operator sign-off."
+  },
+  "sweep": {
+    "enabled": false,
+    "query": "--review-requested=@me --state=open",
+    "mode": "review-only",
+    "_note": "DISABLED pending the --permission-prompt-tool classifier / no-egress sandbox. The sweep is the genuinely untrusted path — arbitrary external repos the operator is review-requested on — where prompt-injection risk is highest. Re-enable only once the headless review runs inside a sandbox or behind a strict allow/deny classifier. Per-user by construction (@me = whoever's gh login); a swept PR whose repo has no registered local checkout is logged as SKIP, never cloned."
+  },
+  "targets": [
+    {
+      "repo_slug": "fractal-agent-system",
+      "owner": "shi503",
+      "repo_dir": "fractal-agent-system",
+      "branch": "main",
+      "gate_cmd": "npm run lint && npm run build",
+      "gate_subdir": "",
+      "enabled": true,
+      "jobs": ["pr-review", "handoff-evidence"]
+    }
+  ]
+}
