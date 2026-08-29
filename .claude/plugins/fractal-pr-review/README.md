@@ -4,7 +4,9 @@ PR-review assistance for FRACTAL repos — gathers a PR's diff and CI state, run
 
 ## Skills
 
-Skill content lands in a later workstream. This plugin currently ships the manifest and directory skeleton only.
+| Skill | Purpose |
+|-------|---------|
+| `pr-assist` | Review a pull request and compound recurring findings into `standards/pr-review-guides/` |
 
 ## Install target
 

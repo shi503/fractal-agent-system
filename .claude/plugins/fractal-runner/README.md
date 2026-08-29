@@ -4,7 +4,9 @@ Installs and operates the FRACTAL scheduled runner, driving unattended workstrea
 
 ## Skills
 
-Skill content lands in a later workstream. This plugin currently ships the manifest and directory skeleton only.
+| Skill | Purpose |
+|-------|---------|
+| `fractal-runner` | Install and operate the scheduled runner in `tools/scheduled-fractal-runner/` |
 
 ## Install target
 
