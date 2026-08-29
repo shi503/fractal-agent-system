@@ -13,7 +13,8 @@
 #   3. No file named people.yaml tracked outside fixtures/
 #   4. No tracked .env* file (except the demo app's .env.example placeholder
 #      template) and no tracked settings.local.json
-#   5. No absolute /Users/... or /home/... path in any tracked file's content
+#   5. No absolute home-directory path (either platform's user-home prefix)
+#      in any tracked file's content
 #   6. tools/repo-hygiene/contamination_scan.py over this repo, clean
 #
 # Usage: bash tools/release-gate.sh [<repo-root>]
