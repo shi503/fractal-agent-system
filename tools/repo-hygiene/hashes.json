@@ -1,0 +1,33 @@
+{
+  "algorithm": "sha256(lowercase token, and each adjacent 2-token join, of every literal source-denylist term; tokens/joins shorter than 3 chars excluded; path-like/hostname-like terms contribute only their joins, not single generic sub-segments)",
+  "generated": "2026-08-29",
+  "hashes": [
+    "007d831ea2e8e1d080b31e33c50b89ea07f9b694bccad998c8cf5cb1a087f889",
+    "01677e8adede64bc29eb63fbe7cbc5a724c40ad4d10f43c0b14d56ac3e39bf73",
+    "01a4d2d7f852936a661dabd8cfe9117075fdee78e91035dce307a4e00ff3ab66",
+    "0387915e3d8776448f5c3857099b422604b61d369fca0b5682c8e8f66785bbd4",
+    "063f93e0d4781e75b87d5dfc6c905f2b50491e4ef18d164ee1adfa2d8f1d429e",
+    "16fd9d98536b9858c794a3d9334edb23d8831ef91f783bb2f1622c53f53163fe",
+    "567c11cc2dd7ae173e8e3ebd338186fe6e62ebf633f3c688ecb6421f30ca40c2",
+    "5a2541695da375a9f6bfbef5cb5b47f5806cb6f7c302a83653b27c0ab0c6c81e",
+    "68fcdd78afb0c7b3d671da85513374ade37d091722d4eae13d15cd4e975cc8c0",
+    "6aee0e678a168eeae8df707e083a158fc23515bdd52eed77ec65b669baa82917",
+    "79f2aac1c6034af3a1d1d568dbf8bb8cc21295a7578d3b809794567f5c38686b",
+    "835f4b80f2dc403d1a7ec336aaebc6290a56e36b6185a4ae67f01a4e96cc0a58",
+    "85f5e10431f69bc2a14046a13aabaefc660103b6de7a84f75c4b96181d03f0b5",
+    "8670cd4bc81724fd3677ba631cd815397a01dbe4333a6e742fbc14920d268ddd",
+    "9c1c934e33089936612ec2b89ad42da2b6b32a2bdd12e07069a4c26683f7c2d5",
+    "af1a9d8a6fdc007f71ac817e9e26f2c6be507ae408c8858d0fe27cb9c46c2c10",
+    "b43401729a5bad3f94ef6a8799a78909fc3d7066a564e2825f1faa601f475c77",
+    "eeeea022413df3a213c1ba7e1acdaccd141c95ee440f938eeab9e62876641016",
+    "efa2054257f20220a950b6937bdc2cbb3c951e202f6794df3daddabd520a0e33",
+    "f326f81af14c62e8a821d17c35cd32007c2a10d63e4f1da1b8e49497b9a77db8",
+    "f6d70eebe7ad1bfee1f311f49a1ada7ba0aab67ec031e02aed72fef35b60f289",
+    "f7a3ee2e1b271f3651ba25fbcf9aac09f526d264db624369fa27451849b88190",
+    "ff02ace7447923a6e77711c745c6b5773d7becd9ae9cad46967e53d9fbfa76fa"
+  ],
+  "min_token_len": 3,
+  "skipped_nohash_term_count": 7,
+  "skipped_regex_term_count": 2,
+  "source": "a private planning repository's cleartext denylist (not published here) \u2014 do not hand-edit this file"
+}
