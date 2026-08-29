@@ -7,17 +7,23 @@ Reads the blueprint YAML, tracks workstream status in a state file,
 and resolves the dependency graph without LLM involvement.
 
 Usage:
-    python3 router.py init                                      # Initialize state from blueprint
-    python3 router.py next                                      # Get next ready workstreams
-    python3 router.py update <workstream_name> <status>         # Update workstream status
-    python3 router.py status                                    # Print full state overview
-    python3 router.py pulse <path_to_PULSE.md>                  # Check heartbeat for escalation
+    python3 router.py init                              # Initialize state from blueprint
+    python3 router.py next                              # Get next ready workstreams
+    python3 router.py update <workstream_name> <status> # Update workstream status
+    python3 router.py status                            # Print full state overview
+    python3 router.py pulse <path_to_PULSE.md>          # Check heartbeat for escalation
 
-    # Override blueprint path (avoids editing the BLUEPRINT_PATH constant):
-    python3 router.py --blueprint BLUEPRINT-MyEpic.yaml init
-    python3 router.py --blueprint BLUEPRINT-MyEpic.yaml next
+    # Override blueprint path without editing BLUEPRINT_PATH.
+    # A relative path resolves, in order: against the current working
+    # directory, against this script's own directory, then against the
+    # repo root (found by walking up from this file to the nearest `.git`).
+    python3 router.py --blueprint fixtures/taskflow/blueprints/BLUEPRINT-NOVA-P3-Hardening.yaml init
+    python3 router.py --blueprint BLUEPRINT-Example.yaml next
 
 Statuses: NOT_STARTED | IN_PROGRESS | COMPLETE
+
+To switch epics: use --blueprint <path> on the command line,
+or update BLUEPRINT_PATH below.
 """
 
 import yaml
@@ -27,17 +33,112 @@ import os
 import re
 from datetime import datetime
 
+ROUTER_VERSION = "2.0.0"
+
 # ---------------------------------------------------------------------------
-# Configuration — update BLUEPRINT_PATH when switching epics,
-# or use --blueprint <filename> on the command line to override.
+# Configuration — use --blueprint <path> on CLI to switch epics,
+# or update BLUEPRINT_PATH below as a persistent default.
 # ---------------------------------------------------------------------------
+
+def _find_repo_root(start):
+    """Walk upward from `start` looking for a `.git` directory; fall back to `start`."""
+    current = start
+    while True:
+        if os.path.isdir(os.path.join(current, ".git")):
+            return current
+        parent = os.path.dirname(current)
+        if parent == current:
+            return start
+        current = parent
+
+
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+_REPO_ROOT = _find_repo_root(_SCRIPT_DIR)
 
 BLUEPRINT_PATH = os.path.join(
-    os.path.dirname(__file__),
-    "BLUEPRINT-{EpicName}.yaml"  # Update for each epic
+    _REPO_ROOT,
+    "fixtures", "taskflow", "blueprints", "BLUEPRINT-NOVA-P1-NotificationCore.yaml"
 )
-STATE_PATH = os.path.join(os.path.dirname(__file__), ".state.json")
+STATE_PATH = os.path.join(_SCRIPT_DIR, ".state.json")
 
+
+# ---------------------------------------------------------------------------
+# Blueprint Normalization
+# ---------------------------------------------------------------------------
+#
+# Two blueprint shapes exist in the wild:
+#
+#   "phased" (a top-level list of phases):
+#     - name: "Phase name"
+#       workstreams:
+#         - feature_lead: FeatureLead-X
+#           dependencies: [...]
+#
+#   "flat"   (a single mapping with a top-level `workstreams` list):
+#     name: Epic-Name
+#     workstreams:
+#       - id: WS-0
+#         name: Some-Workstream
+#         depends_on: [...]
+#
+# _normalize_blueprint returns a canonical list-of-phases shape with a
+# stable `feature_lead` key and `dependencies` list on every workstream.
+# ---------------------------------------------------------------------------
+
+def _workstream_id(ws):
+    """Return a stable string identifier for a workstream in either schema."""
+    if "feature_lead" in ws:
+        return ws["feature_lead"]
+    # Flat schema: prefer `name`, fall back to `id`.
+    name = ws.get("name") or ws.get("id")
+    if not name:
+        raise ValueError(f"Workstream has no feature_lead, name, or id: {ws!r}")
+    return f"FeatureLead-{name}" if not str(name).startswith("FeatureLead-") else str(name)
+
+
+def _normalize_blueprint(raw):
+    """Coerce either blueprint shape into list[{name, workstreams:[...]}]."""
+    # Phased (list of dicts with `workstreams`).
+    if isinstance(raw, list):
+        phases = raw
+    # Flat (single dict with top-level `workstreams`).
+    elif isinstance(raw, dict) and "workstreams" in raw:
+        phases = [{"name": raw.get("name", "default"), "workstreams": raw["workstreams"]}]
+    else:
+        raise ValueError("Blueprint must be a list of phases or a dict with `workstreams`.")
+
+    # Pass 1: assign canonical feature_lead ids and build a ref→id lookup so that
+    # `depends_on: [WS-1]` resolves against the workstream whose `id: WS-1` even
+    # though its feature_lead is `FeatureLead-EventFanout`.
+    ref_to_id = {}
+    for phase in phases:
+        for ws in phase["workstreams"]:
+            ws["feature_lead"] = _workstream_id(ws)
+            for ref in (ws.get("id"), ws.get("name"), ws["feature_lead"]):
+                if ref:
+                    ref_to_id[str(ref)] = ws["feature_lead"]
+
+    # Pass 2: normalize dependencies — accept `depends_on` or `dependencies`,
+    # resolve each ref against the lookup, fall back to FeatureLead-<ref> prefix.
+    for phase in phases:
+        for ws in phase["workstreams"]:
+            deps = ws.get("dependencies") or ws.get("depends_on") or []
+            resolved = []
+            for d in deps:
+                d = str(d)
+                if d in ref_to_id:
+                    resolved.append(ref_to_id[d])
+                elif d.startswith("FeatureLead-"):
+                    resolved.append(d)
+                else:
+                    resolved.append(f"FeatureLead-{d}")
+            ws["dependencies"] = resolved
+    return phases
+
+
+# ---------------------------------------------------------------------------
+# Blueprint Path Resolution
+# ---------------------------------------------------------------------------
 
 def _resolve_blueprint_path(args):
     """
@@ -51,9 +152,18 @@ def _resolve_blueprint_path(args):
             sys.exit(1)
         bp_file = args[idx + 1]
         remaining = args[:idx] + args[idx + 2:]
-        bp_path = bp_file if os.path.isabs(bp_file) else os.path.join(
-            os.path.dirname(__file__), bp_file
-        )
+        if os.path.isabs(bp_file):
+            bp_path = bp_file
+        else:
+            # Resolve a relative path, in order: against the current working
+            # directory, against this script's own directory, then against
+            # the repo root — first match wins, cwd falls back if none exist.
+            bp_path = os.path.join(os.getcwd(), bp_file)
+            for base in (os.getcwd(), _SCRIPT_DIR, _REPO_ROOT):
+                candidate = os.path.join(base, bp_file)
+                if os.path.exists(candidate):
+                    bp_path = candidate
+                    break
         return bp_path, remaining
     return BLUEPRINT_PATH, args
 
@@ -64,9 +174,9 @@ def _resolve_blueprint_path(args):
 
 def load_blueprint(blueprint_path=None):
     """
-    Loads the blueprint file and returns the parsed YAML data.
+    Loads the blueprint file and returns the parsed, normalized blueprint.
 
-    Handles two formats:
+    Handles two file formats:
     - Pure .yaml/.yml files: read directly
     - .md files: extract the fenced ```yaml block
 
@@ -80,14 +190,15 @@ def load_blueprint(blueprint_path=None):
     if path.endswith(('.yaml', '.yml')):
         with open(path, "r") as f:
             content = f.read()
-        return yaml.safe_load(content)
+        raw = yaml.safe_load(content)
     else:
         with open(path, "r") as f:
             for line in f:
                 if line.strip() == "```yaml":
                     break
             yaml_content = f.read().strip().replace("```", "")
-        return yaml.safe_load(yaml_content)
+        raw = yaml.safe_load(yaml_content)
+    return _normalize_blueprint(raw)
 
 
 # ---------------------------------------------------------------------------
@@ -289,10 +400,6 @@ def cmd_pulse(pulse_path):
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(__doc__)
-        sys.exit(1)
-
     bp_path, args = _resolve_blueprint_path(sys.argv[1:])
     if not args:
         print(__doc__)

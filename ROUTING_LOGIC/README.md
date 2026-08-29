@@ -33,17 +33,40 @@ python3 router.py pulse <path/to/PULSE.md>
 
 ## BLUEPRINT Format
 
-Use a **pure `.yaml` file** (recommended). The file must be a **top-level list** — do NOT wrap in a `phases:` key.
+The router accepts **two blueprint shapes**:
 
-See `../SETUP-CLAUDE-CODE.md` §7 for the full blueprint format and authoring rules.
+- **Phased** — a top-level YAML *list* of phases, each with a `workstreams:` list using `feature_lead:` and `dependencies:` keys.
+- **Flat** — a single top-level mapping with a `workstreams:` list using `id:`/`name:` and `depends_on:` keys.
+
+`_normalize_blueprint()` in `router.py` coerces either shape into a canonical list-of-phases form before the rest of the router touches it, so `init`/`next`/`update` work identically regardless of which shape an epic's BLUEPRINT file uses. See `fixtures/taskflow/blueprints/` for one worked example of each shape.
+
+A `.yaml`/`.yml` file is read directly; a `.md` file has its fenced ```` ```yaml ```` block extracted and parsed.
+
+See `../SETUP-CLAUDE-CODE.md` §7 for the full blueprint authoring rules.
 
 ## Configuration
 
-At the top of `router.py`, update these two constants for each epic:
+`router.py` resolves paths without hardcoding a location:
 
 ```python
-BLUEPRINT_PATH = os.path.join(os.path.dirname(__file__), "BLUEPRINT-{EpicName}.yaml")
-STATE_PATH     = os.path.join(os.path.dirname(__file__), ".state.json")
+ROUTER_VERSION = "2.0.0"
+BLUEPRINT_PATH  # defaults to fixtures/taskflow/blueprints/BLUEPRINT-NOVA-P1-NotificationCore.yaml
+                # at the repo root, found by walking up from this file to the nearest `.git`
+STATE_PATH      # .state.json next to this script
 ```
 
-The `.state.json` file is a runtime artifact — add it to `.gitignore`.
+Override the default per-invocation with `--blueprint <path>` instead of editing the constant — a relative path resolves first against the current working directory, then this script's directory, then the repo root:
+
+```bash
+python3 ROUTING_LOGIC/router.py --blueprint fixtures/taskflow/blueprints/BLUEPRINT-NOVA-P3-Hardening.yaml init
+```
+
+The `.state.json` file is a runtime artifact — it is gitignored.
+
+## Canonical copy + identity check
+
+`ROUTING_LOGIC/router.py` is the canonical source. `.claude/fractal/router.py` is a synced copy kept byte-identical to it — see `tools/check-router-identity.sh`. Edit the `ROUTING_LOGIC/` copy and re-sync the `.claude/fractal/` copy; never edit them independently.
+
+## Smoke test
+
+`tools/router-smoke.sh` exercises `init`/`next`/`update`/`status`/`pulse` end-to-end against the fixture blueprint, using a throwaway state file so it never touches `.claude/fractal/.state.json`.
