@@ -38,7 +38,6 @@ ROOT="$(git -C "$ROOT" rev-parse --show-toplevel)"
 # Large tracked files exempt from the 2 MB cap — deliberately vetted content,
 # not a general escape hatch. Matched against the end of the tracked path.
 ALLOW_LARGE=(
-  "The FRACTAL Multi-Agent System.pptx"
   "tools/wiki-index/taskflow.sqlite"
 )
 MAX_BYTES=$((2 * 1024 * 1024))

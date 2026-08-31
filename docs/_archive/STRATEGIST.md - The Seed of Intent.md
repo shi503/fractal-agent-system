@@ -91,7 +91,7 @@ The Strategist agent reads this file, synthesizes the information, and then prod
 | Milestone | Gate | Compliance Scope |
 |-----------|------|-----------------|
 | Milestone 1: Self-Serve Go-Live | New user signs up and makes first API call without human intervention | Auth, API keys, audit logging |
-| Milestone 2: Production Workflows | Core workflows handle real data reliably | Data handling, PHI boundaries, audit trail |
+| Milestone 2: Production Workflows | Core workflows handle real data reliably | Data handling, PHI boundaries, audit trail | <!-- oss-scan-allow: PHI — generic compliance-example prose, byte-identical to main pre-move (WS-22 archive) -->
 | Milestone 3: Platform Maturity | Multiple modules sharing centralized AI service layer | Full audit scope |
 
 ### Evaluator Archetypes

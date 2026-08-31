@@ -66,7 +66,7 @@ This document is the central context file for the Architect agent. It is generat
 |---|---|---|---|
 | Strategist | Opus | Intent interview, Strategist doc authoring | Read-write on `.claude/FRACTAL/STRATEGIST.md` |
 | Architect | Opus | BLUEPRINT authoring, HANDOFF eval, escalation triage | Read-write on `.claude/FRACTAL/`, read-only on feature output |
-| Feature Lead | **Sonnet** | Multi-file workstream implementation (TypeScript, Angular, etc.) | Read-write on assigned file manifest only |
+| Feature Lead | **Sonnet** | Multi-file workstream implementation (TypeScript, Angular, etc.) | Read-write on assigned file manifest only | <!-- oss-scan-allow: Angular — generic framework example, byte-identical to main pre-move (WS-22 archive) -->
 | Sub-Agent | **Sonnet** | Single-file mechanical tasks delegated from Feature Lead | Read-write on assigned files only |
 
 > **Note on Sub-Agents:** Sub-Agents were upgraded from Haiku to Sonnet after the pilot. Haiku hallucinates on typed TypeScript/framework code. Use Sonnet for all code-writing agents. Reserve Haiku only for pure text transforms or simple SQL with zero framework code.
