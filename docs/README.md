@@ -58,3 +58,12 @@ Superseded content, kept for history only — **not** part of the reading order 
 See [`_archive/README.md`](./_archive/README.md) for why each was archived (evidence table: last-commit date, inbound link count, reason).
 
 `docs/The FRACTAL Multi-Agent System.pptx` was deleted (not archived) — see `_archive/README.md` for why.
+
+## Keeping this index honest
+
+The triage above was found by hand, once. `tools/docs-freshness-check.sh` makes that
+detection runnable: for every tracked file under `docs/`, it reports last-commit date,
+inbound link count, and a stale/orphan verdict from the conjunction of both signals.
+Run `bash tools/docs-freshness-check.sh` before adding to or pruning this index — an
+`ORPHAN` verdict means a doc is old *and* unreferenced and needs a disposition decision
+(archive, delete, or link it from here).
