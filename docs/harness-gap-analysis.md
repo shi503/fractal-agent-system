@@ -1,7 +1,7 @@
 # Harness Gap Analysis — FRACTAL vs. The Field
 
 **Status:** Observation only (recommendations go in [`harness-upgrade-roadmap.md`](./harness-upgrade-roadmap.md))
-**Date:** 2026-04-14 (original score below) — see [2026-08-28 re-score](#2026-08-28-re-score-fractal-only) for the current FRACTAL row
+**Date:** 2026-04-14 (original score below) — see [2026-08-28 re-score](#2026-08-28-re-score-fractal-only) for the current FRACTAL row, and the [2026-08-30 D13 addendum](#2026-08-30-addendum--d13-comprehensibility) for the new comprehensibility dimension and the HumanLayer comparator
 **Scoring source:** `docs/research-claude-code-harness.md` (patterns from public source analysis) + primary README/docs fetches for each competitor
 **Scoring scale:** 0 (absent) / 1 (partial) / 2 (strong). Max per harness = 24. Ties broken by leverage.
 
@@ -19,6 +19,7 @@
 | 6 | **Cline** | [`cline/cline`](https://github.com/cline/cline) (~59K★) | VS Code extension, Plan/Act modes, checkpoints |
 | 7 | **everything-claude-code** | `affaan-m/everything-claude-code` | Performance optimization pack across Claude/Codex/Opencode/Cursor |
 | 8 | **LangGraph / AutoGen** | Microsoft & LangChain | Framework-level multi-agent orchestration |
+| 9 | **HumanLayer** | [humanlayer.dev](https://humanlayer.dev) | Six-phase QRSPI workflow (Questions → Research → Design → Structure → Plan → Implement) under the banner "Do not outsource the thinking"; added 2026-08-30 as the D13 comparator only — chosen for onboarding clarity, not re-benchmarked on D1–D12 (see the [D13 addendum](#2026-08-30-addendum--d13-comprehensibility)) |
 | ★ | **FRACTAL** | this repo | 4-tier orchestration (Strategist → Architect → Feature Lead → Sub-Agent) + BLUEPRINT router + 4-layer eval |
 
 ---
@@ -39,6 +40,7 @@
 | D10 | Output discipline / token hygiene | Numeric caps beat adjectives |
 | D11 | Subagent forking model | Fork / teammate / worktree modes |
 | D12 | Observability (PULSE-equivalent) | Live execution trace, not just final logs |
+| D13 | Comprehensibility | Can a stranger state what the project is for, **and** complete a first run, from the README alone? 0 = neither, 1 = one, 2 = both. Added 2026-08-30 — every prior dimension above measures an internal capability axis; none asks whether an outsider can understand or use the project at all. See the [2026-08-30 addendum](#2026-08-30-addendum--d13-comprehensibility) for scope and scoring. |
 
 ---
 
@@ -57,6 +59,8 @@
 | **FRACTAL** | **2** | **1** | **1** | **0** | **1** | **1** | **2** | **2** | **2** | **0** | **1** | **2** | **15** | **63%** |
 
 **Headline:** FRACTAL ranks 3rd overall behind Claude Code and Superpowers, leads on orchestration (D9) and observability (D12), ties best-in-class on CLAUDE.md (D8) and evaluation (D7), but sits at **zero** on hooks (D4) and output discipline (D10) — two dimensions where the public source analysis showed Anthropic extracted real uplift.
+
+**D13 note:** this table is the frozen 2026-04-14 snapshot, scored on 12 dimensions (max 24) — D13 (Comprehensibility) did not exist yet and is not applied retroactively to it. Totals above are re-verified as internally consistent (12 rows × 12 cells, summed and cross-checked against the printed `Total`/`%` columns) and unchanged. D13 first applies in the [2026-08-30 addendum](#2026-08-30-addendum--d13-comprehensibility).
 
 ---
 
@@ -253,6 +257,40 @@ FRACTAL now ties Superpowers (18/24, 75%) for second place and closes one point 
 ### Honest headline
 
 FRACTAL closed exactly the two roadmap items with the lowest effort and least cross-dependency (WS-1's output-discipline rollout, and its side-effect on the D2/#12 verification gap) plus grew skills breadth as a byproduct of the plugin port. It did not touch hooks (D4), plan-mode enforcement (D6), the permission classifier (D5), or subagent-flavor classification (D11) — those remain exactly where the 2026-04-14 analysis left them. 18/24 is a real gain, not a swept board.
+
+**Arithmetic recheck (12-dimension total, pre-D13):** 2+1+2+0+1+1+2+2+2+2+1+2 = 18. Matches the printed `Total` and `18/24 = 75%` above. This is the row the D13 addendum below extends.
+
+---
+
+## 2026-08-30 Addendum — D13 Comprehensibility
+
+**What prompted this:** the 2026-04-14 → 2026-08-28 scoring passes measured twelve internal-capability axes and never asked whether an outsider could understand or use the project at all. D13 closes that blind spot. This score is deliberately not self-graded from familiarity with the repo — it is backed by an external test run by a fresh agent instance with no prior exposure to this project, given only the README and told to execute the literal steps.
+
+**Rubric (restated):** can a stranger state what the project is for, **and** complete a first run, **from the README alone**? 0 = neither, 1 = one, 2 = both.
+
+**Tree state scored:** commit `42fce73` ("feat(ws-21): disclose prereqs before the install steps they gate"), the current HEAD as of 2026-08-30. This is after the problem-statement rewrite (`5cbe4ae`), the prereq-disclosure fix (`42fce73`), and the docs triage (`6b9485f`) — all three are reflected in the score below, and it will need re-running if the tree moves again.
+
+### FRACTAL — D13 = 1
+
+**Half satisfied — "state what it's for": yes, externally verified.** A fresh agent given only the README's opening section, with no other file access, restated FRACTAL's purpose, the three failure modes it targets, and why someone would choose it over a single agent session — in its own words, without prompting or hints. Verbatim from that test: *"FRACTAL is a multi-agent orchestration system for Claude Code that breaks large, multi-day engineering epics into dependency-tracked workstreams, using a Python state machine (`router.py`) — not an LLM — to decide what work is unblocked... trading setup overhead for auditability and safer parallelism."* That is an accurate, unprompted restatement — this half is real.
+
+**Half not established — "complete a first run": partial, not verified end-to-end.** The same fresh-agent test independently executed the README's shell-executable Install steps against a clean clone: `tools/check-prereqs.sh` (exit 0, `OK: python3 + PyYAML present.`) and `tools/router-smoke.sh` (exit 0, 7/7 checks, confirmed zero side effects via `git status --porcelain` before/after) both ran exactly as documented — this is the structural fix for the previously-reproducing ImportError-on-first-run failure, and it holds up under independent execution, not just source-reading. But the README's separate **"First Run"** section — the one that actually walks a stranger through using FRACTAL on a real epic (Strategist interview → Architect BLUEPRINT → `/fractal-init` → Feature Lead execution) — was not completable by the test: step 1 invokes "the strategist agent" and step 3 invokes `/fractal-init`, both used before the README defines either (their definitions appear later, in the Capability Tour and How It Works sections). The tester's own words: *"A reader following First Run top-to-bottom would be typing commands referencing agents/skills the doc hasn't yet named."* No independent test has ever run FRACTAL's actual first-run workflow (interview → plan → bootstrap → execute) end-to-end from the README — only the install/verify prerequisite subset, which is necessary but is not the same claim.
+
+**Score:** 1. Comprehension is real and externally demonstrated; first-run completion is demonstrated only for the install/verify subset, and the section titled to carry the rest of that claim has a disclosed, unresolved forward-reference gap. That is one half satisfied, not two.
+
+### HumanLayer — D13 = 2 (comparator only, sourced from published copy — see caveat)
+
+Fetched from [humanlayer.dev](https://humanlayer.dev), 2026-08-30. Above-the-fold tagline: *"The multiplayer control plane for your software factory."* Names its workflow explicitly — QRSPI (Questions, Research, Design, Structure, Plan, Implement) — under a section banner reading *"Do not outsource the thinking,"* with supporting copy: "Ensure alignment at every step and put engineers in the driver's seat for code quality and architecture." Above-fold call to action is a single command: `brew install humanlayer/humanlayer/humanlayer` (plus a one-click download button) — no clone, no prerequisite check, no multi-step sequence. On the stated rubric this reads as both halves satisfied from marketing copy alone: the purpose statement is self-contained, and the first run is a single package-manager command.
+
+**Caveat:** this D13=2 is sourced from the vendor's own landing-page copy, not an independent execution (`brew install` was not run — installing third-party software was out of scope for this workstream). It is directionally solid — a one-line install command is a much lower bar to clear than FRACTAL's multi-step, multi-tool sequence, regardless of who is asserting it — but it does not carry the same execution-verified weight as the FRACTAL score above, which was independently run. D1–D12 are not scored for HumanLayer; it enters this benchmark as the D13 comparator only, not a full re-benchmark.
+
+### Recomputed total (FRACTAL, with D13)
+
+18 (12-dimension total from the 2026-08-28 re-score, rechecked above) + 1 (D13) = **19 / 26 (73%)**. Max moves from 24 to 26 only for a row that carries a D13 score — the frozen 2026-04-14 table's rows (D13 unscored, marked N/A) stay at max 24, per the note under that table.
+
+### Why this isn't a swept board either
+
+D13 = 1 is the reason this column exists: the 15→18 capability gain across three landed workstreams did not, on its own, make the project legible to a stranger — the "First Run" section's forward-reference gap is a comprehensibility defect the prior two scoring passes had no dimension to catch, because no dimension was looking. Closing it is a small, scoped fix (define "the strategist agent" and `/fractal-init` inline, or reorder the sections) — smaller than most of what already shipped this cycle — and it is now a tracked, named gap rather than an invisible one.
 
 ---
 

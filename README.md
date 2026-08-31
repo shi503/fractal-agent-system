@@ -274,6 +274,8 @@ FRACTAL adds overhead. Use it when the epic has:
 
 Skip it for: single-file fixes, small features, tasks under ~2 hours.
 
+See [`docs/harness-gap-analysis.md`](docs/harness-gap-analysis.md) for how FRACTAL scores against eight other agent harnesses — 18/24 (75%), tied for 2nd place, leading on orchestration and evaluation, still at zero on hooks.
+
 *On the name:* FRACTAL is a backronym — Fractal, Recursive, Agentic, Context-aware, Task-driven, Autonomous, Layered. It describes the shape of the system, not the reason to use one; the reason is the three failures at the top of this file.
 
 ---
