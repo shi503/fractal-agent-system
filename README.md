@@ -161,40 +161,35 @@ Each principle exists to prevent a specific failure. If a principle does not nam
 
 ## Architecture
 
+Tiers are *who*; the artifact chain from the section above is *what appears*. This is the same five-step chain, redrawn against the four tiers that produce and consume each file:
+
 ```mermaid
 graph TB
-    %% ── Left column: Delegation flows DOWN ──
-    User["User (Human)"]
-    Strategist["Tier 0: Strategist (w/ User)"]
-    Architect["Tier 1: Architect (w/ User)"]
-    Router["router.py"]
-    BlueprintPRDs["Blueprint.yaml + PRDs"]
+    Strategist["Tier 0: Strategist"]
+    Architect["Tier 1: Architect"]
     FeatureLeads["Tier 2: Feature Lead(s)"]
-    SubAgents["Tier 3: Sub-Agents"]
+    SubAgents["Tier 3: Sub-Agent(s)"]
 
-    User -->|"intent interview"| Strategist
-    Strategist -->|"Strategist w/ User:
-    epic request"| Architect
-    Strategist -->|"STRATEGIST.md"| Architect
-    Architect -->|"Create PRDs and add to Blueprint"| BlueprintPRDs
-    BlueprintPRDs --> Router
-    Router -->|"next: ready workstreams"| FeatureLeads
-    FeatureLeads -->|"atomic tasks"| SubAgents
+    S["STRATEGIST-myapp.md"]
+    B["BLUEPRINT-Epic.yaml"]
+    P["workstreams/*.md (PRD)"]
+    H["HANDOFF.md"]
+    R["router.py next"]
 
-    %% ── Right column: Validation flows UP ──
-    SubAgents -.->|"report back"| FeatureLeads
-    FeatureLeads -.->|"HANDOFF.md + build evidence"| HandoffGate["Build Gate"]
-    HandoffGate <-.->|"router.py update COMPLETE"| Router
-    Router <-.->|"status + next"| Architect
-    Architect <-.->|"Layer 1: lint/build/tsc"| EvalGate["Eval Gate"]
-    Architect <-.->|"Layer 2: LLM judgment"| EvalGate
-    EvalGate <-.->|"accept"| Router
-    EvalGate <-.->|"reject (max 2x)"| FeatureLeads
-    EvalGate <-.->|"escalate"| User
-    Architect <-.->|"escalate"| User
+    Strategist -->|writes| S
+    S -->|read by| Architect
+    Architect -->|writes| B
+    B -->|decomposed into| P
+    P -->|assigned to| FeatureLeads
+    FeatureLeads -->|delegates atomic work| SubAgents
+    SubAgents -.->|reports back| FeatureLeads
+    FeatureLeads -->|writes| H
+    H -.->|reviewed by| Architect
+    Architect -.->|router.py update COMPLETE| R
+    R -->|unblocks| FeatureLeads
 ```
 
-**The key insight:** The Architect never writes code. Feature Leads never make architectural decisions. Sub-Agents never reason about surrounding context. Each tier does exactly one thing.
+**The key insight:** The Architect never writes code. Feature Leads never make architectural decisions. Sub-Agents never reason about surrounding context. Each tier does exactly one thing, and every handoff between tiers is a named file, not a memory.
 
 ---
 
