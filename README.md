@@ -16,14 +16,23 @@ Every step leaves a file on disk you can open. That is the whole design: **nothi
 
 ## Install (Claude Code) — 2 minutes
 
+**Prerequisites: Python 3.8+ and PyYAML** (`pip install pyyaml`). `router.py` imports PyYAML
+to parse BLUEPRINT files — step 2 below checks for both automatically and tells you exactly
+what to install if either is missing, rather than letting you hit a raw traceback at step 3.
+
 ```bash
 # 1. Clone the repo
 git clone https://github.com/shi503/fractal-agent-system.git
 cd fractal-agent-system
 ```
 
+```bash
+# 2. Check prerequisites: fails loudly with the remedy if Python 3 or PyYAML is missing
+bash tools/check-prereqs.sh
 ```
-# 2. Add this checkout as a plugin marketplace, then install the plugins you need
+
+```
+# 3. Add this checkout as a plugin marketplace, then install the plugins you need
 /plugin marketplace add .
 /plugin install fractal-core@fractal-marketplace
 ```
@@ -35,7 +44,7 @@ Lead, Sub-Agent) and the operational skills (`fractal-init`, `pulse`, `handoff`,
 below for what each one carries.
 
 ```
-# 3. Verify: exercises the router end-to-end against the bundled fixture, no side effects
+# 4. Verify: exercises the router end-to-end against the bundled fixture, no side effects
 ```
 ```bash
 bash tools/router-smoke.sh
@@ -43,6 +52,20 @@ bash tools/router-smoke.sh
 
 No file edits required for that verification — it runs against `fixtures/taskflow/` in a
 throwaway state directory and never touches this repo's own `.claude/fractal/.state.json`.
+
+Steps 1, 2, and 4 are shell commands and chain into one copy-pasteable block (step 3 is a pair
+of Claude Code slash commands, typed inside the tool, so it stays separate):
+
+```bash
+git clone https://github.com/shi503/fractal-agent-system.git && \
+  cd fractal-agent-system && \
+  bash tools/check-prereqs.sh && \
+  bash tools/router-smoke.sh
+```
+
+There is no package-manager install (no `brew install fractal`) — this is a plugin marketplace
+checkout, not a published package, so `/plugin marketplace add .` stays a manual step run
+inside Claude Code.
 
 **Wiring FRACTAL into your own project** (not this repo) is a second step after plugin
 install: your project needs its own `.claude/fractal/router.py`, workstreams directory, and
@@ -297,7 +320,7 @@ fractal-agent-system/
 
 1. **BLUEPRINT accepts two shapes** — a top-level phased list (`- name: ... workstreams: [...]`) or a flat mapping (`workstreams:` with `id:`/`depends_on:`). `_normalize_blueprint()` coerces either into one canonical form before `init`/`next`/`update` see it. See `fixtures/taskflow/blueprints/` for one worked example of each.
 2. **`router.py` supports `--blueprint`** — a relative path resolves against the cwd, then the script's own directory, then the repo root. Use it instead of editing the `BLUEPRINT_PATH` constant.
-3. **PyYAML** — `pip install pyyaml` if `import yaml` fails.
+3. **PyYAML** — `pip install pyyaml` if `import yaml` fails. Run `bash tools/check-prereqs.sh` any time to check without triggering a raw ImportError.
 4. **`.state.json`** — a runtime artifact; keep it gitignored.
 5. **`router.py pulse`** — pass the full path to `PULSE.md`, not the workstream directory.
 6. **Feature Leads must never run `router.py init`** — it wipes all workstream state to `NOT_STARTED`. They only run `router.py update <workstream-name> COMPLETE`.
