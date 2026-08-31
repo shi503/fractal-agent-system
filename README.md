@@ -1,6 +1,16 @@
 # FRACTAL Multi-Agent System
 
-**FRACTAL** (Fractal, Recursive, Agentic, Context-aware, Task-driven, Autonomous, Layered) is a hierarchical framework for orchestrating teams of AI agents on complex software development tasks.
+**Multi-agent orchestration for work that is too big for one context window.**
+
+Hand a week-long epic to a single agent session and the same three things go wrong:
+
+- **Context drifts across a long run.** By hour three the agent is working from a summary of a summary. The constraint you set in message four is gone, and nothing announces its departure.
+- **"Done" is unverifiable.** The agent reports success. You find out at review time that the build was red, or that half the acceptance criteria were quietly reinterpreted.
+- **Parallel agents cost more to coordinate than they save.** Nothing tracks which piece is actually unblocked, so you become the scheduler — re-reading five transcripts to answer "what can start now?"
+
+FRACTAL removes those three by moving flow control out of the prompt. A Python state machine (`router.py`) — not an LLM — decides what runs next, from a dependency graph you wrote down. Each unit of work starts in a fresh context with an explicit file manifest, and ends by producing a `HANDOFF.md` whose claims are pasted build and test output rather than an agent's self-assessment.
+
+Every step leaves a file on disk you can open. That is the whole design: **nothing to memorize, everything inspectable.**
 
 ---
 
@@ -71,23 +81,60 @@ python3 .claude/fractal/router.py status
 
 ---
 
-## How It Works
+## How It Works — Follow the Artifacts
 
-1. **Strategist (you)** defines the epic intent via a structured interview
-2. **Architect** decomposes the epic into a BLUEPRINT (YAML dependency graph) + one PRD per workstream
-3. **`router.py init`** reads the BLUEPRINT, creates `.state.json` with all workstreams at `NOT_STARTED`
-4. **`router.py next`** returns workstreams whose dependencies are all `COMPLETE`
-5. **Feature Lead** sessions execute one workstream each — clean context, file manifest, acceptance criteria
-6. **Pulse** emits a JSON heartbeat; `router.py pulse` checks for escalation without LLM
-7. **Handoff** runs the CI gate, generates `HANDOFF.md`, marks the workstream `COMPLETE`
-8. **Architect** evaluates HANDOFF artifacts; repeat until all workstreams complete
+FRACTAL has four agent tiers, but you never run a tier. What you run is a chain of files. Each step below produces one artifact, on disk, in your repo — so "where are we?" is always answered by opening a file, never by asking an agent what it remembers.
+
+```
+STRATEGIST-myapp.md   what we're building & why
+     ↓
+BLUEPRINT-Epic.yaml   the dependency graph
+     ↓
+workstreams/*.md      one PRD per unit of work
+     ↓
+HANDOFF.md            evidence "done" is real
+     ↓
+router.py next        what's unblocked now
+```
+
+### 1. `STRATEGIST-myapp.md` — what we're building & why
+
+The Strategist agent interviews you once per project and writes this file: the mandate, the principles that override defaults, the constraints, the failure modes you already know about, and how much autonomy agents get.
+
+**What you do:** answer the interview, then read the file back before you accept it. Everything downstream inherits from it, so a vague answer here becomes a vague PRD three steps later. Commit it.
+
+### 2. `BLUEPRINT-<Epic>.yaml` — the dependency graph
+
+The Architect reads the Strategist doc and decomposes one epic into workstreams. Each entry carries an `id`, a `name`, the `prd` path, a model assignment, acceptance criteria, and `depends_on` — the edges that make this a graph rather than a list. Worked examples: [`fixtures/taskflow/blueprints/`](fixtures/taskflow/blueprints/).
+
+**What you do:** read the graph and argue with it. This is the cheapest moment to catch a missing dependency or a workstream that is secretly two. Then `/fractal-init BLUEPRINT-MyEpic.yaml`, which writes `.claude/fractal/.state.json` with every workstream at `NOT_STARTED`.
+
+### 3. `.claude/fractal/workstreams/<name>/prd-<name>.md` — one PRD per unit of work
+
+One PRD per workstream: goal, context, acceptance criteria, and a file manifest naming exactly which files that workstream may read and write. A Feature Lead session opens with this file and nothing else — that clean start is what keeps hour three from drifting.
+
+**What you do:** check the manifests do not overlap. Two workstreams that can write the same file cannot safely run in parallel. While one is running, its `PULSE.md` heartbeat sits beside the PRD; `router.py pulse <path>` reads it and flags an escalation without asking an LLM.
+
+### 4. `HANDOFF.md` — evidence "done" is real
+
+When a workstream finishes, its Feature Lead writes a `HANDOFF.md` next to the PRD: what shipped (with file paths), what did not, technical debt taken on, decisions that deviated from the PRD, and a table of build/lint/test commands with their **pasted output**. A HANDOFF whose gate is red is not a HANDOFF. Skeleton: [`.claude/fractal/templates/handoff-template.md`](.claude/fractal/templates/handoff-template.md).
+
+**What you do:** review this instead of the transcript. The evidence table is the definition of done, so verifying a workstream means re-running one command, not re-reading a conversation. Accept it and the workstream is marked `COMPLETE`; reject it and it goes back with the specific criterion that failed.
+
+### 5. `router.py next` — what's unblocked now
+
+Marking a workstream `COMPLETE` changes the graph. `python3 .claude/fractal/router.py next` reads `.state.json` and prints every workstream whose dependencies are all satisfied — the full set that can start now, in parallel, safely.
+
+**What you do:** dispatch a Feature Lead per workstream it names, and go back to step 3. `router.py status` prints the whole board when you want the wider view. The scheduling decision is arithmetic over a graph, which is exactly why it does not live in a prompt.
 
 ## Core Principles
 
-1. **Deterministic Orchestration** — Flow control lives in Python (`router.py`), not in LLM prompts. LLMs are unreliable routers; code is not.
-2. **Hard Context Resets** — Each agent starts with a clean, well-defined context file. No accumulated conversation history. Prevents context drift.
-3. **Hierarchy and Specialization** — Four tiers with explicit model assignments. Match model cost to task complexity.
-4. **Tool Trace as Truth** — Evaluation is based on actual build/lint/test output, not agent self-reporting.
+Each principle exists to prevent a specific failure. If a principle does not name the failure it prevents, it is decoration.
+
+1. **Deterministic Orchestration** — Flow control lives in Python (`router.py`), not in LLM prompts. *Prevents:* work starting on a workstream whose dependency has not actually landed, because an agent judged it "probably fine." LLMs are unreliable routers; code is not.
+2. **Hard Context Resets** — Each agent starts from a clean, well-defined context file with no inherited conversation history. *Prevents:* context drift — the hour-three failure where a constraint set early in a long session silently stops being honored.
+3. **Hierarchy and Specialization** — Four tiers, each with an explicit model assignment. *Prevents:* the two matched failures of a flat setup — a cheap model making an architectural call it cannot make, and an expensive model burning budget on a mechanical single-file edit.
+4. **Tool Trace as Truth** — Evaluation reads actual build/lint/test output pasted into the HANDOFF. *Prevents:* the confident false completion — an agent reporting success on code that does not compile, which you would otherwise discover at review time.
 
 ## Architecture
 
@@ -203,6 +250,8 @@ FRACTAL adds overhead. Use it when the epic has:
 - **Risk of context drift** in a single long session
 
 Skip it for: single-file fixes, small features, tasks under ~2 hours.
+
+*On the name:* FRACTAL is a backronym — Fractal, Recursive, Agentic, Context-aware, Task-driven, Autonomous, Layered. It describes the shape of the system, not the reason to use one; the reason is the three failures at the top of this file.
 
 ---
 
