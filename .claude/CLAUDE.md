@@ -1,8 +1,11 @@
-# CLAUDE.md — TaskFlow
+# CLAUDE.md — TaskFlow product-stack guide
 
-> **This is a sample CLAUDE.md for the TaskFlow demo project** (a Linear-style kanban tracker for engineering teams and AI agents).
-> Copy this file into your project root (or `.claude/CLAUDE.md`) and customize every section for your project.
-> CLAUDE.md is the always-on context doc that grounds every Claude Code session.
+> **This file has two jobs, and neither one is "this repo's project instructions."**
+>
+> 1. **The TaskFlow product-stack guide.** Everything below describes the demo application — the stack, the RSC/client decision tree, the Server Action shape, the design tokens, the database conventions. Read it before writing product code in `app/`, `components/`, `lib/`, or `prisma/`.
+> 2. **The sample a consuming project copies.** It stays a real, working guide precisely so it is worth copying. Copy it to your own project root as `CLAUDE.md` and customize every section.
+>
+> **This repo's own always-on instructions are the root `CLAUDE.md`** — that is the path Claude Code auto-loads. It establishes framework mode versus product mode and points here for the product half.
 
 ---
 

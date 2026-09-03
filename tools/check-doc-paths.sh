@@ -2,7 +2,8 @@
 # check-doc-paths.sh — deterministic gate for repo-relative paths cited in the
 # top-level onboarding docs.
 #
-# Scans README.md, SETUP-CLAUDE-CODE.md, and .claude/CLAUDE.md for single-backtick
+# Scans README.md, SETUP-CLAUDE-CODE.md, the root CLAUDE.md and AGENTS.md, and
+# .claude/CLAUDE.md for single-backtick
 # inline code spans that look like a repo-relative path (contain a `/`, or are a
 # bare filename with a recognized extension) and verifies each one resolves
 # against the repo root. Content inside triple-backtick fenced blocks is not
@@ -37,6 +38,8 @@ repo_root = Path(sys.argv[1])
 DOCS = [
     "README.md",
     "SETUP-CLAUDE-CODE.md",
+    "CLAUDE.md",
+    "AGENTS.md",
     ".claude/CLAUDE.md",
 ]
 
