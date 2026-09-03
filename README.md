@@ -161,10 +161,11 @@ Each principle exists to prevent a specific failure. If a principle does not nam
 
 ## Architecture
 
-Tiers are *who*; the artifact chain from the section above is *what appears*. This is the same five-step chain, redrawn against the four tiers that produce and consume each file:
+Tiers are *who*; the artifact chain from the section above is *what appears*. This is the same five-step chain, redrawn against the four tiers that produce and consume each file — plus the half the chain alone hides. Solid edges are delegation flowing down. Dotted edges are validation flowing up, and they end at you: "done" is a gate verdict, not a file's existence.
 
 ```mermaid
 graph TB
+    You["You (Human)"]
     Strategist["Tier 0: Strategist"]
     Architect["Tier 1: Architect"]
     FeatureLeads["Tier 2: Feature Lead(s)"]
@@ -175,18 +176,31 @@ graph TB
     P["workstreams/*.md (PRD)"]
     H["HANDOFF.md"]
     R["router.py next"]
+    Pulse["PULSE.md + router.py pulse"]
+    L1["Layer 1: deterministic gate"]
+    L2["Layer 2: LLM judgment"]
 
+    %% Delegation flows down
+    You -->|interview| Strategist
     Strategist -->|writes| S
     S -->|read by| Architect
     Architect -->|writes| B
     B -->|decomposed into| P
     P -->|assigned to| FeatureLeads
-    FeatureLeads -->|delegates atomic work| SubAgents
-    SubAgents -.->|reports back| FeatureLeads
-    FeatureLeads -->|writes| H
-    H -.->|reviewed by| Architect
-    Architect -.->|router.py update COMPLETE| R
     R -->|unblocks| FeatureLeads
+    FeatureLeads -->|delegates atomic work| SubAgents
+
+    %% Validation flows up
+    SubAgents -.->|reports back| FeatureLeads
+    FeatureLeads -.->|heartbeat| Pulse
+    Pulse -.->|HEARTBEAT_ALERT| Architect
+    FeatureLeads -->|writes| H
+    FeatureLeads -.->|router.py update COMPLETE| R
+    H -.->|reviewed by Architect| L1
+    L1 -.-> L2
+    L2 -.->|pass: Architect runs it| R
+    L2 -.->|"fail: fix and resubmit (max 2)"| FeatureLeads
+    L2 -.->|second fail: escalate| You
 ```
 
 **The key insight:** The Architect never writes code. Feature Leads never make architectural decisions. Sub-Agents never reason about surrounding context. Each tier does exactly one thing, and every handoff between tiers is a named file, not a memory.
