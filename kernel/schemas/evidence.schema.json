@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/shi503/fractal-agent-system/main/kernel/schemas/evidence.schema.json",
+  "title": "FRACTAL kernel evidence",
+  "description": "Structured completion record for one workstream. Graph law: dependents become ready only when this evidence is accepted. Layer 1 rows must carry pasted command output — not a self-assessment.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "workstream_id",
+    "blueprint",
+    "accepted",
+    "work_completed",
+    "work_not_completed",
+    "technical_debt",
+    "key_decisions",
+    "layer1"
+  ],
+  "properties": {
+    "workstream_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "description": "Must match a BLUEPRINT workstreams[].id"
+    },
+    "blueprint": {
+      "type": "string",
+      "minLength": 1,
+      "description": "BLUEPRINT name or path this evidence closes"
+    },
+    "accepted": {
+      "type": "boolean",
+      "description": "Architect (or installer equivalent) accepted this evidence. True is the only signal that unlocks dependents. Not PRD Status."
+    },
+    "work_completed": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Specific outcomes: paths, symbols, behaviors"
+    },
+    "work_not_completed": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "In-scope items left undone, with reason. Use a single 'None' entry if complete."
+    },
+    "technical_debt": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Shortcuts, TODOs, follow-ups. Use a single 'None' entry if none."
+    },
+    "key_decisions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/decision" },
+      "description": "Decisions and PRD deviations with rationale"
+    },
+    "layer1": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/layer1_row" },
+      "description": "Deterministic gates. Each row must include the command and pasted stdout/stderr."
+    }
+  },
+  "$defs": {
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "rationale", "deviation"],
+      "properties": {
+        "decision": { "type": "string", "minLength": 1 },
+        "rationale": { "type": "string", "minLength": 1 },
+        "deviation": {
+          "type": "boolean",
+          "description": "True when this departed from the PRD"
+        }
+      }
+    },
+    "layer1_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gate", "command", "result", "output"],
+      "properties": {
+        "gate": {
+          "type": "string",
+          "minLength": 1,
+          "description": "lint | build | typecheck | test | or project-specific gate name"
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Exact command that was run"
+        },
+        "result": {
+          "type": "string",
+          "enum": ["PASS", "FAIL", "N/A"]
+        },
+        "output": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Pasted command output. Self-reported PASS without output is invalid."
+        }
+      }
+    }
+  }
+}

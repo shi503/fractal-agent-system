@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/shi503/fractal-agent-system/main/kernel/schemas/blueprint.schema.json",
+  "title": "FRACTAL kernel BLUEPRINT",
+  "description": "Harness-neutral epic contract. Installer extensions (model tiers, installer-specific directory paths, feature_lead names, router state) must not appear here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "title",
+    "date",
+    "status",
+    "revised",
+    "trigger",
+    "context",
+    "workstreams",
+    "parallel",
+    "notes"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "description": "Stable epic identifier (filename stem). Example: NOVA-P1-NotificationCore"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable epic title"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "ISO date the BLUEPRINT was authored"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "complete", "superseded"],
+      "description": "Epic-level lifecycle only. Workstream readiness is derived from accepted evidence, not this field."
+    },
+    "revised": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "ISO date of the last revision. Equal to date when never revised."
+    },
+    "trigger": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Why this epic exists now — the request or milestone that opened it"
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_documents", "locked_decisions", "pending"],
+      "properties": {
+        "source_documents": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Paths or titles the Architect read before decomposing"
+        },
+        "locked_decisions": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Decisions Feature Leads must not reopen"
+        },
+        "pending": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Open questions that do not block listed workstreams"
+        }
+      }
+    },
+    "workstreams": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/workstream" }
+    },
+    "parallel": {
+      "type": "array",
+      "description": "Execution-order waves only. Each wave is a list of workstream ids that may run concurrently once their depends_on evidence is accepted. Not a second dependency graph.",
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Execution-order commentary only. Do not store installer routing, model tiers, or PRD status here."
+    }
+  },
+  "$defs": {
+    "workstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "prd", "description", "depends_on", "acceptance"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+          "description": "Kebab-case workstream id. This is the only legal depends_on value."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable workstream name"
+        },
+        "prd": {
+          "type": "string",
+          "pattern": "^workstreams/[a-z][a-z0-9]*(-[a-z0-9]+)*/prd-[a-z][a-z0-9]*(-[a-z0-9]+)*\\.md$",
+          "description": "Harness-neutral PRD path: workstreams/{kebab}/prd-{kebab}.md"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+          },
+          "description": "Workstream ids whose evidence must be accepted before this workstream is ready. Empty means ready when the epic is active."
+        },
+        "acceptance": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Epic-level acceptance bullets for this workstream. The PRD may refine them; it may not contradict them."
+        }
+      }
+    }
+  }
+}

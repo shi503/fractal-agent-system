@@ -1,0 +1,102 @@
+# Worked example — NOVA P1 Notification Core (TaskFlow)
+#
+# Source on main did not include
+# fixtures/taskflow/blueprints/BLUEPRINT-NOVA-P1-NotificationCore.yaml
+# or the fractal template files this prompt named. This epic is reconstructed
+# from TaskFlow notification intent already in-repo (NotificationStore /
+# unreadCount / nav badge / per-category toggles) and stripped of installer fields.
+#
+# Validate: python3 kernel/validate.py
+
+name: NOVA-P1-NotificationCore
+title: P1 Notification Core
+date: "2026-03-20"
+status: active
+revised: "2026-09-03"
+trigger: >
+  TaskFlow P1 needs an in-app notification core so issue assignment,
+  comments, and status changes surface to the current user with a Linear-quality
+  unread badge and inbox. Email, push, and a cross-module notification center
+  are out of this epic.
+
+context:
+  source_documents:
+    - docs/STRATEGIST.md - The Seed of Intent.md
+    - docs/platform-strategy.md
+    - docs/PRD.md
+    - docs/HANDOFF.md
+  locked_decisions:
+    - In-app only in P1. No email, SMS, or browser push.
+    - Every notification row is team-scoped (teamId) and RLS-enforced.
+    - Notification bodies must not contain PHI, credentials, or raw tokens.
+    - Humans and agents share the same write path; stamp source + actor id.
+    - Zustand holds unread-badge / inbox client state only — not server records.
+    - Preference defaults are all-on for issue_assigned, issue_commented, status_changed.
+  pending:
+    - Realtime transport (Supabase realtime vs short poll) is not in this epic.
+    - Cross-module notification center belongs to a later platform-shell epic.
+
+workstreams:
+  - id: notification-schema
+    name: Notification schema
+    prd: workstreams/notification-schema/prd-notification-schema.md
+    description: >
+      Add Notification and NotificationPreference models, generate the client,
+      and seed one user with mixed read/unread rows so later workstreams have
+      data to query.
+    depends_on: []
+    acceptance:
+      - Prisma validate and generate succeed with Notification and NotificationPreference.
+      - Seed creates at least one unread and one read notification for the demo user.
+      - teamId is present and required on both new models.
+
+  - id: notification-actions
+    name: Notification actions and queries
+    prd: workstreams/notification-actions/prd-notification-actions.md
+    description: >
+      Server Actions and RSC queries for list, unread count, mark-read, and
+      mark-all-read. Auth and Zod run before any database write.
+    depends_on:
+      - notification-schema
+    acceptance:
+      - listNotifications returns the current user's rows for the active team, newest first.
+      - unreadCount matches the number of rows with readAt null.
+      - markRead and markAllRead are no-ops for another user's ids.
+
+  - id: notification-prefs
+    name: Notification preferences
+    prd: workstreams/notification-prefs/prd-notification-prefs.md
+    description: >
+      Per-category toggle grid and Server Action so a user can disable
+      issue_assigned, issue_commented, or status_changed without losing history.
+    depends_on:
+      - notification-schema
+    acceptance:
+      - Settings page shows one toggle per category with current persisted values.
+      - Toggling a category persists and survives reload.
+      - Disabled categories do not create new notifications (write-path guard).
+
+  - id: notification-inbox
+    name: Notification inbox and unread badge
+    prd: workstreams/notification-inbox/prd-notification-inbox.md
+    description: >
+      Inbox page plus a nav unread badge bound to unreadCount. Mark-read from
+      the inbox updates the badge without a full reload.
+    depends_on:
+      - notification-actions
+    acceptance:
+      - /inbox lists notifications with unread styling and a mark-read control.
+      - Nav badge shows unreadCount and hides at zero.
+      - Mark-read from the inbox decrements the badge.
+
+parallel:
+  - [notification-schema]
+  - [notification-actions, notification-prefs]
+  - [notification-inbox]
+
+notes: >
+  notification-schema is the only root. After its evidence is accepted,
+  notification-actions and notification-prefs may run at the same time.
+  notification-inbox waits on notification-actions evidence (queries and
+  mutations must exist before the inbox can bind them). Preferences do not
+  block the inbox.

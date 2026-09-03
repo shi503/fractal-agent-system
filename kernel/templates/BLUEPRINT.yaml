@@ -1,0 +1,56 @@
+# Kernel BLUEPRINT template — harness-neutral epic contract.
+# Copy this file, fill every field, then validate against
+# kernel/schemas/blueprint.schema.json.
+#
+# Graph law: depends_on lists workstream ids. A workstream is ready only
+# when every dependency's evidence is accepted. parallel and notes are
+# execution-order commentary only — they do not replace depends_on.
+#
+# Forbidden in this file: model tiers, installer paths, feature_lead names,
+# stored workstream Status.
+
+name: EPIC-ID
+title: Human-readable epic title
+date: "YYYY-MM-DD"
+status: draft
+revised: "YYYY-MM-DD"
+trigger: >
+  One or two sentences: the request or milestone that opened this epic.
+
+context:
+  source_documents:
+    - path/or-title-of-source-1
+    - path/or-title-of-source-2
+  locked_decisions:
+    - Decision Feature Leads must not reopen.
+  pending:
+    - Open question that does not block listed workstreams.
+
+workstreams:
+  - id: first-workstream
+    name: First workstream
+    prd: workstreams/first-workstream/prd-first-workstream.md
+    description: What this workstream produces, in one or two sentences.
+    depends_on: []
+    acceptance:
+      - Verifiable outcome 1
+      - Verifiable outcome 2
+
+  - id: second-workstream
+    name: Second workstream
+    prd: workstreams/second-workstream/prd-second-workstream.md
+    description: What this workstream produces after first-workstream evidence is accepted.
+    depends_on:
+      - first-workstream
+    acceptance:
+      - Verifiable outcome that depends on first-workstream
+
+# Waves of workstream ids that may run concurrently once depends_on is satisfied.
+# Documentation only — the graph is depends_on + accepted evidence.
+parallel:
+  - [first-workstream]
+  - [second-workstream]
+
+notes: >
+  Execution order only. Example: first-workstream is the root; second-workstream
+  starts after first-workstream evidence is accepted.

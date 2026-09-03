@@ -133,8 +133,13 @@ graph TB
 
 | Platform | Status | Guide |
 |----------|--------|-------|
-| **Claude Code** | First-class | This README + `example-claude/README.md` |
-| **Cursor** | Community-supported | [SETUP-CURSOR.md](SETUP-CURSOR.md) — adapt Claude Code agents into Cursor rules |
+| **Claude Code** | First-class (default) | This README + `example-claude/README.md` + [SETUP-CLAUDE-CODE.md](SETUP-CLAUDE-CODE.md) |
+| **Grok Bot** | Adapter | [kernel/README.md](kernel/README.md) — GitHub PR/Actions scheduler |
+| **Cursor** | Adapter | [kernel/README.md](kernel/README.md) — consume kernel templates; do not copy agents into `.mdc` rules. `SETUP-CURSOR.md` is stale. |
+
+### Portable kernel
+
+Installer-neutral BLUEPRINT / PRD / evidence contracts live in [`kernel/`](kernel/). Claude Code remains the default installer (this README). Grok Bot and Cursor copy the same templates — see the [installer matrix](kernel/README.md). Cursor must not copy `agents/*.md` into `.cursor/rules/*.mdc`.
 
 ---
 
@@ -194,6 +199,7 @@ Skip it for: single-file fixes, small features, tasks under ~2 hours.
 ```
 fractal-agent-system/
 ├── README.md                    # This file
+├── kernel/                      # Portable BLUEPRINT / PRD / evidence contract (see kernel/README.md)
 ├── The FRACTAL Multi-Agent System.md  # System overview and architecture reference
 ├── LICENSE                      # MIT
 ├── BEST-PRACTICES.md            # Lessons from production use
